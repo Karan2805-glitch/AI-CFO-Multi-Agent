@@ -2,9 +2,9 @@ from app.services.preprocessing import preprocess
 from app.services.kpi_service import calculate_kpis
 from app.services.ratio_service import calculate_ratios
 
-def analyze(file):
+def analyze(df):
     # Step 1: Preprocess
-    df = preprocess(file)
+    df = preprocess(df)
 
     # Step 2: KPI Calculation
     kpis = calculate_kpis(df)
