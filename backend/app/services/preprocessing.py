@@ -1,13 +1,5 @@
 import pandas as pd
 
-def load_data(file):
-    try:
-        df = pd.read_csv(file)
-    except Exception as e:
-        raise ValueError(f"Error reading CSV: {e}")
-
-    return df
-
 def clean_columns(df):
     df.columns = df.columns.str.strip().str.lower()
     return df
@@ -43,8 +35,7 @@ def process_dates(df):
     df = df.sort_values("date")
     return df
 
-def preprocess(file):
-    df = load_data(file)
+def preprocess(df):
     df = clean_columns(df)
     df = validate_columns(df)
     df = handle_missing_values(df)
