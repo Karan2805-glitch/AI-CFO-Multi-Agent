@@ -5,7 +5,7 @@ def clean_columns(df):
     return df
 
 REQUIRED_COLUMNS = [
-    "date", "revenue", "rent", "salaries",
+    "months", "revenue", "rent", "salaries",
     "marketing", "subscriptions", "utilities", "other"
 ]
 
@@ -22,7 +22,7 @@ def handle_missing_values(df):
     return df
 
 def convert_types(df):
-    numeric_cols = df.columns.drop("date")
+    numeric_cols = df.columns.drop("months")
 
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors='coerce')
@@ -31,8 +31,8 @@ def convert_types(df):
     return df
 
 def process_dates(df):
-    df["date"] = pd.to_datetime(df["date"], errors='coerce')
-    df = df.sort_values("date")
+    df["months"] = pd.to_datetime(df["months"], errors='coerce')
+    df = df.sort_values("months")
     return df
 
 def preprocess(df):
