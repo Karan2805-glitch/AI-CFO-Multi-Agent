@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Theme Variables ─────────────────────────────────────────── */
+:root, [data-theme="midnight"] {
+  --bg-base:        #070B14;
+  --bg-card:        rgba(13, 21, 38, 0.65);
+  --bg-card-solid:  #0D1526;
+  --bg-nav:         rgba(7, 11, 20, 0.90);
+  --bg-tooltip:     rgba(7, 11, 20, 0.95);
+  --bg-login:       rgba(10, 16, 30, 0.75);
+  --border-subtle:  rgba(255,255,255,0.07);
+  --blob-blue:      rgba(59,130,246,0.08);
+  --blob-purple:    rgba(139,92,246,0.08);
+  --silk-fill:      #070B14;
+}
+
+[data-theme="void"] {
+  --bg-base:        #000000;
+  --bg-card:        rgba(14, 14, 14, 0.85);
+  --bg-card-solid:  #111111;
+  --bg-nav:         rgba(0, 0, 0, 0.96);
+  --bg-tooltip:     rgba(8, 8, 8, 0.98);
+  --bg-login:       rgba(8, 8, 8, 0.85);
+  --border-subtle:  rgba(255,255,255,0.05);
+  --blob-blue:      rgba(59,130,246,0.05);
+  --blob-purple:    rgba(139,92,246,0.05);
+  --silk-fill:      #000000;
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg-base);
+  color: #F1F5F9;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.4s ease;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+/* ── Glass Card ──────────────────────────────────────────────── */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+/* ── Gradient text ───────────────────────────────────────────── */
+.grad-blue { background: linear-gradient(135deg,#3B82F6,#6366F1); -webkit-background-clip:text; color:transparent; background-clip:text; }
+.grad-purple { background: linear-gradient(135deg,#8B5CF6,#EC4899); -webkit-background-clip:text; color:transparent; background-clip:text; }
+.grad-green  { background: linear-gradient(135deg,#10B981,#06B6D4); -webkit-background-clip:text; color:transparent; background-clip:text; }
+.grad-main   { background: linear-gradient(135deg,#3B82F6,#8B5CF6); -webkit-background-clip:text; color:transparent; background-clip:text; }
+
+/* ── Glow borders ────────────────────────────────────────────── */
+.glow-blue   { box-shadow: 0 0 20px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08); }
+.glow-purple { box-shadow: 0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08); }
+.glow-green  { box-shadow: 0 0 20px rgba(16,185,129,0.15), inset 0 1px 0 rgba(255,255,255,0.08); }
+.glow-red    { box-shadow: 0 0 20px rgba(244,63,94,0.15),  inset 0 1px 0 rgba(255,255,255,0.08); }
+
+/* ── Recharts overrides ──────────────────────────────────────── */
+.recharts-default-tooltip {
+  background: rgba(7,11,20,0.95) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+}
+.recharts-tooltip-label { color: #94A3B8 !important; font-size: 12px !important; }
+.recharts-tooltip-item  { color: #F1F5F9 !important; font-size: 13px !important; }
+.recharts-text { fill: #64748B !important; font-size: 11px !important; }
+.recharts-cartesian-axis-tick text { fill: #64748B !important; }
+.recharts-legend-item-text { color: #94A3B8 !important; }
+
+/* ── Page transitions ────────────────────────────────────────── */
+.page-enter {
+  animation: page-in 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Stagger children ────────────────────────────────────────── */
+.stagger > * { opacity: 0; animation: slide-up 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger > *:nth-child(6) { animation-delay: 0.30s; }
+.stagger > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger > *:nth-child(8) { animation-delay: 0.40s; }
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Health ring ─────────────────────────────────────────────── */
+.health-ring {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: conic-gradient(#10B981 calc(78% * 1deg * 3.6), rgba(255,255,255,0.06) 0);
+  display: flex; align-items: center; justify-content: center;
+}
+.health-ring-inner {
+  width: 112px; height: 112px;
+  background: #0D1526;
+  border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+}
+
+/* ── AI Chatbot ───────────────────────────────────────────────── */
+.chatbot-glow {
+  box-shadow: 0 0 32px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.msg-enter {
+  animation: msg-in 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)  scale(1); }
+}
+
+.typing-dot {
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%            { transform: translateY(-4px); opacity: 1; }
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Login & Onboarding Cards ────────────────────────────────── */
+.login-card {
+  background: var(--bg-login);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 32px 80px rgba(0,0,0,0.5),
+    0 0 60px rgba(59,130,246,0.08);
+  transition: background 0.4s ease;
+}
+
+.onboarding-card {
+  background: var(--bg-login);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 32px 80px rgba(0,0,0,0.5);
+  max-height: 90vh;
+  overflow-y: auto;
+  transition: background 0.4s ease;
+}
+
+/* ── Slow ambient pulse ───────────────────────────────────────── */
+.animate-pulse-slow {
+  animation: pulse-slow 6s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.08); }
+}
+
+/* ── Void theme overrides ──────────────────────────────── */
+[data-theme="void"] .recharts-default-tooltip {
+  background: rgba(8,8,8,0.98) !important;
+}
+
+[data-theme="void"] .health-ring-inner {
+  background: #0F0F0F;
+}
+
+/* Nav sidebar */
+[data-theme="void"] aside {
+  background: rgba(0,0,0,0.96) !important;
+}
+
+/* Recharts bg-[#0D1526] tooltip override */
+[data-theme="void"] .bg-\[\#0D1526\] {
+  background: #0F0F0F !important;
+}
+
+/* ── CurvedLoop text style ──────────────────────────────── */
+.curved-loop-text {
+  fill: rgba(147, 197, 253, 0.9); /* blue-300 */
+  font-size: 13px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
