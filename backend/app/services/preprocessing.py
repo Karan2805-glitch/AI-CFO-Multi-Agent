@@ -1,48 +1,34 @@
 import pandas as pd
 
-def clean_columns(df):
-    df.columns = df.columns.str.strip().str.lower()
-    return df
+def preprocess(df: pd.DataFrame):
 
-REQUIRED_COLUMNS = [
-    "months", "revenue", "rent", "salaries",
-    "marketing", "subscriptions", "utilities", "other"
-]
+    # ---- 1. Normalize column names ----
+    df.columns = [col.strip().lower() for col in df.columns]
 
-def validate_columns(df):
-    missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
-    
-    if missing:
-        raise ValueError(f"Missing columns: {missing}")
-    
-    return df
+    # ---- 2. Drop unnamed / empty columns ----
+    df = df.loc[:, ~df.columns.str.contains("^unnamed")]
+    df = df.dropna(axis=1, how="all")
 
-def handle_missing_values(df):
+    # ---- 3. Normalize 'months' column ----
+    if "months" in df.columns:
+        df["months"] = df["months"].astype(str).str.strip()
+
+    # ---- 4. Fill missing values ----
     df = df.fillna(0)
-    return df
 
-def convert_types(df):
-    numeric_cols = df.columns.drop("months")
+    # ---- 5. Convert numeric columns safely ----
+    for col in df.columns:
+        if col != "months":
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
-    for col in numeric_cols:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
+    # ---- 6. Aggregate duplicate months (NEW ADDITION) ----
+    if "months" in df.columns:
+        df = df.groupby("months", as_index=False).sum()
 
-    df = df.fillna(0)
-    return df
-
-def process_dates(df):
-    df["months"] = pd.to_datetime(df["months"], errors='coerce')
-    df = df.sort_values("months")
-    return df
-
-def preprocess(df):
-    df = clean_columns(df)
-    df = validate_columns(df)
-    df = handle_missing_values(df)
-    df = convert_types(df)
-    df = process_dates(df)
+    # ---- 7. Debug logs (TEMPORARY) ----
+    print("Processed Columns:", df.columns.tolist())
+    print(df.head())
 
     return df
-
 # df = preprocess("sample.csv")
 # print(df)
