@@ -6,6 +6,7 @@ from app.agents.recommendation_agent import generate_recommendations
 from app.agents.auditor_agent import generate_explanation
 from app.agents.health_agent import calculate_health_score
 from app.agents.forecast_agent import generate_forecast, prepare_forecast_output
+from app.agents.anomaly_agent import detect_anomalies
 
 def analyze(df):
     # Step 1: Preprocess
@@ -33,6 +34,9 @@ def analyze(df):
     forecast_values = generate_forecast(df)
     forecast_data = prepare_forecast_output(df, forecast_values)
 
+    #Step 9: Anomaly Agent
+    anomalies = detect_anomalies(df)
+
     return {
     "kpi": kpis,
     "ratios": ratios,
@@ -40,7 +44,8 @@ def analyze(df):
     "recommendations": recommendations,
     "health_score": health_score,
     "auditor": auditor,
-    "forecast": forecast_data
+    "forecast": forecast_data,
+    "anomalies": anomalies
 }
 
 # if __name__ == "__main__":
