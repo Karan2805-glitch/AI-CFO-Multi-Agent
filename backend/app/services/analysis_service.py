@@ -11,7 +11,7 @@ from app.agents.anomaly_agent import detect_anomalies
 def analyze(df):
     # Step 1: Preprocess
     df = preprocess(df)
-
+    df.columns = [col.strip().lower() for col in df.columns]
     # Step 2: KPI Calculation
     kpis = calculate_kpis(df)
 

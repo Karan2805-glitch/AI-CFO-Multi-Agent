@@ -34,5 +34,13 @@ async def analyze_csv(file: UploadFile = File(...)):
             "data": result
         }
 
+    except pd.errors.ParserError:
+        raise HTTPException(status_code=400, detail="Invalid CSV format")
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     except Exception as e:
+        print("===== BACKEND ERROR =====")
+        print(type(e).__name__, ":", str(e))
         raise HTTPException(status_code=500, detail=str(e))

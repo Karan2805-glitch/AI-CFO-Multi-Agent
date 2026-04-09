@@ -1,10 +1,10 @@
-# from app.services.preprocessing import preprocess
+from app.services.preprocessing import preprocess
 
 def calculate_total_revenue(df):
     return df["revenue"].sum()
 
 def calculate_total_expenses(df):
-    expense_cols = df.columns.drop(["date", "revenue"])
+    expense_cols = df.columns.drop(["months", "revenue"])
     return df[expense_cols].sum().sum()
 
 def calculate_profit(total_revenue, total_expenses):
@@ -19,7 +19,7 @@ def calculate_avg_revenue(df):
     return df["revenue"].mean()
 
 def calculate_expense_breakdown(df):
-    expense_cols = df.columns.drop(["date", "revenue"])
+    expense_cols = df.columns.drop(["months", "revenue"])
     return df[expense_cols].sum().to_dict()
 
 def calculate_kpis(df):
