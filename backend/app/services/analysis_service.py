@@ -10,7 +10,6 @@ from app.agents.forecast_agent import forecast_revenue, prepare_forecast_output
 def analyze(df):
     # Step 1: Preprocess
     df = preprocess(df)
-    df.columns = [col.strip().lower() for col in df.columns]
     # Step 2: KPI Calculation
     kpis = calculate_kpis(df)
 

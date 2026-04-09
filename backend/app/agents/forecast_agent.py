@@ -1,6 +1,7 @@
 import numpy as np
 
 def forecast_revenue(df, periods=3):
+    df = df.sort_values("months")
     revenues = df["revenue"].values
 
     if len(revenues) < 2:

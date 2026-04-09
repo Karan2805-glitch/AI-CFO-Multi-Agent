@@ -1,46 +1,85 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Query
+from sqlalchemy.orm import Session
 import pandas as pd
 import io
 
+from app.db import get_db
+from app.models import AnalysisRun, Session as SessionModel
 from app.services.analysis_service import analyze
 
 router = APIRouter()
 
-@router.post("/analyze")
-async def analyze_csv(file: UploadFile = File(...)):
-    """
-    Accept CSV → Process → Return structured financial insights
-    """
 
-    # ---- 1. Validate file ----
+def compress_result(result: dict):
+    return {
+        "kpi": result.get("kpi"),
+        "risk": result.get("risk"),
+        "health_score": result.get("health_score"),
+        "forecast": result.get("forecast"),
+
+        "recommendations": {
+            "recommendations": result.get("recommendations", {}).get("recommendations", [])
+        },
+
+        "auditor": {
+            "summary": result.get("auditor", {}).get("summary")
+        }
+    }
+
+
+@router.post("/analyze")
+async def analyze_csv(
+    session_id: str = Query(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+
+    session_id = session_id.strip()
+
+    # Validate session
+    session = db.query(SessionModel).filter_by(id=session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files allowed")
 
     try:
-        # ---- 2. Read CSV in-memory (NO disk I/O) ----
         contents = await file.read()
         df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
-        # ---- 3. Run pipeline ----
-        result = analyze(df)   # IMPORTANT: pass dataframe, not path
+        result = analyze(df)
+        compressed = compress_result(result)
 
-        # ---- 4. Structured response for frontend ----
+        health_score = compressed.get("health_score", 0)
+        risk_level = compressed.get("risk", {}).get("risk_level", "UNKNOWN")
+
+        run = AnalysisRun(
+            session_id=session_id,
+            row_count=len(df),
+            health_score=health_score,
+            risk_level=risk_level,
+            result=compressed
+        )
+
+        db.add(run)
+        db.commit()
+        db.refresh(run)
+
+        # 🔹 RETURN ONLY SUMMARY (optimized)
         return {
             "status": "success",
-            "meta": {
-                "rows": len(df),
-                "columns": list(df.columns)
-            },
-            "data": result
+            "run_id": run.id,
+            "session_id": session_id,
+
+            "summary": {
+                "health_score": health_score,
+                "risk_level": risk_level,
+                "total_revenue": compressed.get("kpi", {}).get("total_revenue"),
+                "profit": compressed.get("kpi", {}).get("profit")
+            }
         }
 
-    except pd.errors.ParserError:
-        raise HTTPException(status_code=400, detail="Invalid CSV format")
-
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
     except Exception as e:
-        print("===== BACKEND ERROR =====")
-        print(type(e).__name__, ":", str(e))
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))

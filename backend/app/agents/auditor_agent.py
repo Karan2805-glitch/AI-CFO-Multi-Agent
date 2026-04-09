@@ -37,5 +37,6 @@ def generate_explanation(kpis, ratios, risk, recommendations):
         )
 
     return {
-        "explanation": " ".join(explanation_parts)
+    "summary": " ".join(explanation_parts),
+    "details": explanation_parts  # optional, useful for UI sections
     }
