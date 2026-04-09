@@ -11,20 +11,29 @@ import Dashboard      from './pages/Dashboard';
 import Ledger         from './pages/Ledger';
 import Forecast       from './pages/Forecast';
 import { useData }    from './context/DataContext';
+import { loadSession, saveSession, clearSession } from './lib/auth';
 
-// auth states: 'login' | 'onboarding' | 'upload' | 'app'
+// ── Determine initial auth state ───────────────────────────────────────────────
+// Priority: session exists + has data → skip to app
+//           session exists, no data   → skip to upload
+//           no session                 → show login
+const getInitialState = (hasData) => {
+  const session = loadSession();
+  if (!session) return 'login';
+  if (hasData)  return 'app';
+  return 'upload';
+};
+
 export default function App() {
   const { hasData } = useData();
-
-  // If we already have analysis data in localStorage, skip straight to app
-  const [authState, setAuthState] = useState(() =>
-    hasData ? 'app' : 'login'
-  );
-  const [currentUser, setCurrentUser] = useState(null);
+  const [authState, setAuthState] = useState(() => getInitialState(hasData));
+  const [currentUser, setCurrentUser] = useState(() => loadSession());
 
   const handleLogin = (user) => {
     setCurrentUser(user);
-    if (user.provider === 'google' && user.isNew) {
+    saveSession(user);
+    // New user (first time, not guest) → onboarding
+    if (user.isNew && user.provider !== 'guest') {
       setAuthState('onboarding');
     } else {
       setAuthState('upload');
@@ -33,12 +42,18 @@ export default function App() {
 
   const handleOnboardingComplete = (userWithProfile) => {
     setCurrentUser(userWithProfile);
+    saveSession(userWithProfile);
     setAuthState('upload');
+  };
+
+  const handleLogout = () => {
+    clearSession();
+    setCurrentUser(null);
+    setAuthState('login');
   };
 
   return (
     <>
-      {/* Full-screen silk animation */}
       <SilkBackground />
 
       {/* Ambient radial glows */}
@@ -47,25 +62,21 @@ export default function App() {
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-700/8 rounded-full blur-[120px]" />
       </div>
 
-      {/* ── Auth: Login */}
       {authState === 'login' && (
         <LoginPage onLogin={handleLogin} />
       )}
 
-      {/* ── Auth: Onboarding (new Google users) */}
       {authState === 'onboarding' && (
         <OnboardingPage user={currentUser} onComplete={handleOnboardingComplete} />
       )}
 
-      {/* ── Auth: Upload CSV */}
       {authState === 'upload' && (
         <UploadPage onSuccess={() => setAuthState('app')} />
       )}
 
-      {/* ── Main App */}
       {authState === 'app' && (
         <div className="flex w-screen h-screen overflow-hidden relative z-10">
-          <Navigation user={currentUser} />
+          <Navigation user={currentUser} onLogout={handleLogout} />
           <main className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-8">
             <div className="max-w-5xl mx-auto">
               <Routes>

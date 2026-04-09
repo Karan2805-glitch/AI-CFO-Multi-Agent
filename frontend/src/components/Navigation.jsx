@@ -2,9 +2,10 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Wallet, BrainCircuit, Activity,
-  Upload, ChevronRight, Moon, Sparkles
+  Upload, ChevronRight, Moon, Sparkles, LogOut, UserRound
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { clearAnalysis } from '../api/analyzeService';
 
 const navItems = [
   { to: '/upload',    icon: Upload,          label: 'Upload Data',    color: 'group-hover:text-sky-400',    active: 'text-sky-400',    ring: 'border-sky-500/30 bg-sky-500/10'    },
@@ -13,7 +14,7 @@ const navItems = [
   { to: '/forecast',  icon: BrainCircuit,    label: 'Forecast Engine',color: 'group-hover:text-emerald-400',active: 'text-emerald-400',ring: 'border-emerald-500/30 bg-emerald-500/10'},
 ];
 
-const Navigation = () => {
+const Navigation = ({ user, onLogout }) => {
   const loc = useLocation();
   const { theme, toggleTheme } = useTheme();
   const isMidnight = theme === 'midnight';
@@ -87,18 +88,28 @@ const Navigation = () => {
         </button>
       </div>
 
-      {/* Status */}
-      <div className="px-5 py-5 border-t border-white/5">
-        <div className="glass rounded-xl px-4 py-3 flex flex-col gap-1.5">
-          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">System Status</p>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot"></span>
-            <span className="text-xs text-slate-300">All Agents Online</span>
+      </div>
+
+      {/* User + Logout */}
+      <div className="px-4 pb-5 border-t border-white/5 pt-4">
+        <div className="glass rounded-xl px-3 py-3 flex items-center gap-3">
+          {user?.photo
+            ? <img src={user.photo} alt="avatar" className="w-7 h-7 rounded-full object-cover shrink-0" />
+            : <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shrink-0">
+                <UserRound size={13} className="text-white" />
+              </div>
+          }
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-slate-300 truncate">{user?.name ?? 'Guest'}</p>
+            <p className="text-[10px] text-slate-600 truncate">{user?.email ?? 'guest session'}</p>
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-            <span className="text-xs text-slate-400">Last run: 2 min ago</span>
-          </div>
+          <button
+            onClick={() => { if (onLogout) { clearAnalysis(); onLogout(); } }}
+            title="Sign out"
+            className="p-1.5 rounded-lg hover:bg-red-500/15 hover:text-red-400 text-slate-500 transition-all duration-200"
+          >
+            <LogOut size={13} />
+          </button>
         </div>
       </div>
     </aside>

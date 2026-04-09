@@ -1,158 +1,356 @@
-import React, { useState } from 'react';
-import { Sparkles, UserRound, ArrowRight, ShieldCheck, TrendingUp, Brain } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Sparkles, UserRound, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, TrendingUp, Brain, UserPlus } from 'lucide-react';
 import CurvedLoop from '../components/CurvedLoop';
+import { registerUser, loginUser, handleGoogleCredential, GOOGLE_CLIENT_ID } from '../lib/auth';
 
-// ── Project tagline ───────────────────────────────────────────────────────────
 const TAGLINE = 'Turn Data Into Decisions ✦ Know Your Numbers ✦ AI-CFO ✦ Real-Time Insights ✦ Smart Finance ✦ Your Virtual CFO ✦';
 
-// ── Feature Pills ─────────────────────────────────────────────────────────────
 const features = [
-  { icon: Brain,      label: 'AI-Powered Insights'   },
-  { icon: TrendingUp, label: 'Real-Time Forecasting'  },
-  { icon: ShieldCheck,label: 'Anomaly Detection'      },
+  { icon: Brain,       label: 'AI-Powered Insights'  },
+  { icon: TrendingUp,  label: 'Real-Time Forecasting' },
+  { icon: ShieldCheck, label: 'Anomaly Detection'     },
 ];
 
-// ── Google mock handler ───────────────────────────────────────────────────────
-// In production, replace with real OAuth flow (Firebase Auth / Supabase / NextAuth)
-const MOCK_GOOGLE_USER = {
-  name:  'Amay Ranjan',
-  email: 'amay@example.com',
-  photo: null,
-  isNew: true, // flip to false to skip onboarding
+// ── Reusable Input ────────────────────────────────────────────────────────────
+const Input = ({ icon: Icon, type = 'text', placeholder, value, onChange, right }) => (
+  <div className="relative">
+    {Icon && <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />}
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full bg-white/5 border border-white/12 rounded-xl py-3 text-sm text-slate-200 placeholder-slate-600 outline-none
+        focus:border-blue-500/50 focus:bg-white/8 transition-all duration-200 pl-10 pr-10"
+    />
+    {right}
+  </div>
+);
+
+// ── Google Button (GSI rendered OR fallback) ──────────────────────────────────
+const GoogleAuthButton = ({ onCredential, label }) => {
+  const btnRef = useRef(null);
+  const [gsiReady, setGsiReady] = useState(false);
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
+    const init = () => {
+      if (!window.google?.accounts?.id) return;
+      window.google.accounts.id.initialize({
+        client_id:        GOOGLE_CLIENT_ID,
+        callback:         (response) => onCredential(response),
+        auto_select:      false,
+        cancel_on_tap_outside: true,
+      });
+      if (btnRef.current) {
+        window.google.accounts.id.renderButton(btnRef.current, {
+          theme:  'filled_black',
+          size:   'large',
+          width:  '100%',
+          text:   label === 'register' ? 'signup_with' : 'signin_with',
+          shape:  'pill',
+        });
+        setGsiReady(true);
+      }
+    };
+
+    // GSI script may already be loaded or still loading
+    if (window.google?.accounts?.id) {
+      init();
+    } else {
+      const interval = setInterval(() => {
+        if (window.google?.accounts?.id) { clearInterval(interval); init(); }
+      }, 200);
+      return () => clearInterval(interval);
+    }
+  }, [label, onCredential]);
+
+  // If no client ID configured → show info badge
+  if (!GOOGLE_CLIENT_ID) {
+    return (
+      <div className="w-full flex items-center gap-3 py-3 rounded-2xl border border-white/10 bg-white/3 px-4 text-xs text-slate-500">
+        <GoogleIcon />
+        <span>Google OAuth — add <code className="text-blue-400">VITE_GOOGLE_CLIENT_ID</code> to .env to enable</span>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={btnRef} className={`w-full transition-all duration-300 ${gsiReady ? 'opacity-100' : 'opacity-0 h-12'}`} />
+  );
 };
 
-export default function LoginPage({ onLogin }) {
-  const [loading, setLoading] = useState(null); // 'google' | 'guest'
+// ── Sign In Tab ───────────────────────────────────────────────────────────────
+const SignInTab = ({ onLogin }) => {
+  const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
+  const [show, setShow]         = useState(false);
+  const [loading, setLoading]   = useState(null);
+  const [error, setError]       = useState('');
 
+  const handleEmail = async (e) => {
+    e.preventDefault();
+    setError(''); setLoading('email');
+    const result = loginUser({ email, password });
+    if (result.success) {
+      onLogin(result.user);
+    } else {
+      setError(result.error);
+      setLoading(null);
+    }
+  };
 
-  const handleGoogle = async () => {
-    setLoading('google');
-    // Simulate OAuth round-trip
-    await new Promise(r => setTimeout(r, 1400));
-    setLoading(null);
-    onLogin({ ...MOCK_GOOGLE_USER, provider: 'google' });
+  const handleGoogle = (credentialResponse) => {
+    setError(''); setLoading('google');
+    const result = handleGoogleCredential(credentialResponse);
+    if (result.success) {
+      onLogin(result.user);
+    } else {
+      setError(result.error);
+      setLoading(null);
+    }
   };
 
   const handleGuest = async () => {
     setLoading('guest');
-    await new Promise(r => setTimeout(r, 600));
-    setLoading(null);
+    await new Promise(r => setTimeout(r, 500));
     onLogin({ name: 'Guest', email: null, photo: null, isNew: false, provider: 'guest' });
   };
 
   return (
+    <div className="flex flex-col gap-4">
+      {/* Google */}
+      <GoogleAuthButton onCredential={handleGoogle} label="signin" />
+
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-white/8" />
+        <span className="text-xs text-slate-600">or sign in with email</span>
+        <div className="flex-1 h-px bg-white/8" />
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400">{error}</div>
+      )}
+
+      {/* Form */}
+      <form onSubmit={handleEmail} className="flex flex-col gap-3">
+        <Input icon={Mail} type="email" placeholder="you@company.com" value={email} onChange={setEmail} />
+        <Input
+          icon={Lock} type={show ? 'text' : 'password'} placeholder="Password"
+          value={password} onChange={setPassword}
+          right={
+            <button type="button" onClick={() => setShow(s => !s)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+              {show ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          }
+        />
+        <button
+          id="btn-signin-email"
+          type="submit"
+          disabled={!!loading || !email || !password}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm text-white
+            bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500
+            disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-blue-500/20 active:scale-[0.98]"
+        >
+          {loading === 'email' ? <span className="animate-pulse">Signing in…</span> : <><ArrowRight size={15} /> Sign In</>}
+        </button>
+      </form>
+
+      {/* Guest */}
+      <button
+        id="btn-guest"
+        onClick={handleGuest}
+        disabled={!!loading}
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm text-slate-400 border border-white/8
+          hover:text-slate-200 hover:bg-white/5 hover:border-white/15 transition-all disabled:opacity-40"
+      >
+        <UserRound size={15} /> Continue as Guest
+      </button>
+    </div>
+  );
+};
+
+// ── Register Tab ──────────────────────────────────────────────────────────────
+const RegisterTab = ({ onLogin }) => {
+  const [name, setName]             = useState('');
+  const [email, setEmail]           = useState('');
+  const [password, setPassword]     = useState('');
+  const [confirm, setConfirm]       = useState('');
+  const [show, setShow]             = useState(false);
+  const [loading, setLoading]       = useState(null);
+  const [error, setError]           = useState('');
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (password !== confirm) { setError('Passwords do not match'); return; }
+    if (password.length < 6)  { setError('Password must be at least 6 characters'); return; }
+    setLoading('email');
+    const result = registerUser({ name, email, password });
+    if (result.success) {
+      onLogin(result.user);
+    } else {
+      setError(result.error);
+      setLoading(null);
+    }
+  };
+
+  const handleGoogle = (credentialResponse) => {
+    setError(''); setLoading('google');
+    const result = handleGoogleCredential(credentialResponse);
+    if (result.success) {
+      onLogin(result.user);
+    } else {
+      setError(result.error);
+      setLoading(null);
+    }
+  };
+
+  const pwStrength = password.length === 0 ? null : password.length < 6 ? 'weak' : password.length < 10 ? 'medium' : 'strong';
+  const strengthColor = { weak: 'bg-red-500', medium: 'bg-amber-500', strong: 'bg-emerald-500' };
+  const strengthPct   = { weak: '33%', medium: '66%', strong: '100%' };
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Google Register */}
+      <GoogleAuthButton onCredential={handleGoogle} label="register" />
+
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-white/8" />
+        <span className="text-xs text-slate-600">or register with email</span>
+        <div className="flex-1 h-px bg-white/8" />
+      </div>
+
+      {error && (
+        <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400">{error}</div>
+      )}
+
+      <form onSubmit={handleRegister} className="flex flex-col gap-3">
+        <Input icon={UserRound} placeholder="Full Name" value={name} onChange={setName} />
+        <Input icon={Mail} type="email" placeholder="Work Email" value={email} onChange={setEmail} />
+        <div>
+          <Input
+            icon={Lock} type={show ? 'text' : 'password'} placeholder="Password (min 6 chars)"
+            value={password} onChange={setPassword}
+            right={
+              <button type="button" onClick={() => setShow(s => !s)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                {show ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            }
+          />
+          {pwStrength && (
+            <div className="mt-1.5 h-1 rounded-full bg-white/5">
+              <div className={`h-full rounded-full transition-all duration-300 ${strengthColor[pwStrength]}`} style={{ width: strengthPct[pwStrength] }} />
+            </div>
+          )}
+        </div>
+        <Input icon={Lock} type="password" placeholder="Confirm Password" value={confirm} onChange={setConfirm} />
+
+        <button
+          id="btn-register"
+          type="submit"
+          disabled={!!loading || !name || !email || !password || !confirm}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm text-white
+            bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500
+            disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98]"
+        >
+          {loading === 'email'
+            ? <span className="animate-pulse">Creating account…</span>
+            : <><UserPlus size={15} /> Create Account</>}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// ── Main Login Page ───────────────────────────────────────────────────────────
+export default function LoginPage({ onLogin }) {
+  const [tab, setTab] = useState('signin'); // 'signin' | 'register'
+
+  return (
     <div className="fixed inset-0 flex items-center justify-center overflow-hidden" style={{ zIndex: 10 }}>
 
-      {/* ── Decorative ambient blobs */}
+      {/* Ambient blobs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-blue-600/12 rounded-full blur-[120px] animate-pulse-slow" />
         <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-purple-600/12 rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '1.5s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-600/6 rounded-full blur-[80px]" />
       </div>
 
-      {/* ── Grid overlay */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
-        style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+      {/* Card */}
+      <div className="login-card relative w-full max-w-sm mx-4 px-7 py-8 rounded-3xl animate-slide-up">
 
-      {/* ── Main Card */}
-      <div className="login-card relative flex flex-col items-center w-full max-w-md mx-4 px-8 py-10 rounded-3xl page-enter">
-
-        {/* Logo / Brand */}
-        <div className="flex flex-col items-center gap-3 mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <Sparkles size={26} className="text-white" />
+        {/* Brand */}
+        <div className="flex flex-col items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+            <Sparkles size={22} className="text-white" />
           </div>
           <div className="text-center">
             <h1 className="text-3xl font-extrabold tracking-tight grad-main">AI-CFO</h1>
-            <p className="text-slate-500 text-sm mt-1 font-medium">Multi-Agent Financial Decision Support System</p>
+            <p className="text-slate-500 text-xs mt-0.5 font-medium">Multi-Agent Financial Decision Support System</p>
           </div>
         </div>
 
-        {/* Divider + Heading */}
-        <p className="text-slate-400 text-sm mb-6 text-center leading-relaxed">
-          Sign in to access your financial intelligence dashboard, anomaly alerts, and AI-driven forecasts.
-        </p>
-
         {/* Feature pills */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
+        <div className="flex justify-center gap-2 flex-wrap mb-6">
           {features.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-400">
+            <span key={label} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium
+              bg-white/5 border border-white/8 text-slate-400">
               <Icon size={11} className="text-blue-400" />
               {label}
-            </div>
+            </span>
           ))}
         </div>
 
-        {/* ── Google Sign-In Button */}
-        <button
-          id="btn-google-signin"
-          onClick={handleGoogle}
-          disabled={!!loading}
-          className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-semibold text-sm text-white border transition-all duration-300 mb-3
-            bg-white/6 border-white/15 hover:bg-white/12 hover:border-white/25 hover:shadow-lg hover:shadow-blue-500/10
-            disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
-        >
-          {loading === 'google' ? (
-            <span className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-          ) : (
-            <GoogleIcon />
-          )}
-          {loading === 'google' ? 'Connecting to Google…' : 'Continue with Google'}
-        </button>
-
-        {/* ── Separator */}
-        <div className="w-full flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-white/8" />
-          <span className="text-xs text-slate-600 font-medium">or</span>
-          <div className="flex-1 h-px bg-white/8" />
+        {/* Tab switcher */}
+        <div className="flex rounded-xl bg-white/5 border border-white/8 p-0.5 mb-5">
+          {[
+            { key: 'signin',   label: 'Sign In'  },
+            { key: 'register', label: 'Register' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                tab === key
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
-        {/* ── Guest Button */}
-        <button
-          id="btn-guest-login"
-          onClick={handleGuest}
-          disabled={!!loading}
-          className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm border transition-all duration-300
-            text-slate-300 bg-white/3 border-white/10 hover:bg-white/8 hover:border-white/20 hover:text-slate-100
-            disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
-        >
-          {loading === 'guest' ? (
-            <span className="w-4 h-4 rounded-full border-2 border-slate-500 border-t-slate-200 animate-spin" />
-          ) : (
-            <UserRound size={16} className="text-slate-400" />
-          )}
-          {loading === 'guest' ? 'Entering as guest…' : 'Continue as Guest'}
-          {!loading && <ArrowRight size={14} className="text-slate-500 ml-auto" />}
-        </button>
+        {/* Tab content */}
+        {tab === 'signin'   && <SignInTab   onLogin={onLogin} />}
+        {tab === 'register' && <RegisterTab onLogin={onLogin} />}
 
-        {/* Fine print */}
-        <p className="text-[11px] text-slate-700 text-center mt-6 leading-relaxed">
-          By signing in you agree to our{' '}
+        {/* Legal */}
+        <p className="text-[10px] text-slate-600 text-center mt-5 leading-relaxed">
+          By continuing you agree to our{' '}
           <span className="text-slate-500 hover:text-slate-400 cursor-pointer underline underline-offset-2">Terms of Service</span>
           {' '}and{' '}
           <span className="text-slate-500 hover:text-slate-400 cursor-pointer underline underline-offset-2">Privacy Policy</span>.
         </p>
       </div>
 
-      {/* ── CurvedLoop tagline at bottom */}
+      {/* CurvedLoop tagline */}
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ opacity: 0.55 }}>
-        <CurvedLoop
-          marqueeText={TAGLINE}
-          speed={1.8}
-          curveAmount={180}
-          direction="left"
-          interactive={false}
-          className="curved-loop-text"
-        />
+        <CurvedLoop marqueeText={TAGLINE} speed={1.8} curveAmount={180} direction="left" />
       </div>
     </div>
   );
 }
 
-// ── Inline Google SVG icon ────────────────────────────────────────────────────
+// ── Google SVG icon ───────────────────────────────────────────────────────────
 function GoogleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
       <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
       <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
       <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
