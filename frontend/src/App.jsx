@@ -2,20 +2,25 @@ import React, { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 
-import Navigation    from './components/Navigation';
+import Navigation     from './components/Navigation';
 import SilkBackground from './components/SilkBackground';
-import LoginPage     from './pages/LoginPage';
+import LoginPage      from './pages/LoginPage';
 import OnboardingPage from './pages/OnboardingPage';
-import UploadPage    from './pages/UploadPage';
-import Dashboard     from './pages/Dashboard';
-import Ledger        from './pages/Ledger';
-import Forecast      from './pages/Forecast';
+import UploadPage     from './pages/UploadPage';
+import Dashboard      from './pages/Dashboard';
+import Ledger         from './pages/Ledger';
+import Forecast       from './pages/Forecast';
+import { useData }    from './context/DataContext';
 
 // auth states: 'login' | 'onboarding' | 'upload' | 'app'
 export default function App() {
-  const [authState, setAuthState] = useState('login');
+  const { hasData } = useData();
+
+  // If we already have analysis data in localStorage, skip straight to app
+  const [authState, setAuthState] = useState(() =>
+    hasData ? 'app' : 'login'
+  );
   const [currentUser, setCurrentUser] = useState(null);
-  const [ready, setReady] = useState(false);
 
   const handleLogin = (user) => {
     setCurrentUser(user);
@@ -53,12 +58,12 @@ export default function App() {
       )}
 
       {/* ── Auth: Upload CSV */}
-      {authState === 'upload' && !ready && (
-        <UploadPage onSuccess={() => { setReady(true); setAuthState('app'); }} />
+      {authState === 'upload' && (
+        <UploadPage onSuccess={() => setAuthState('app')} />
       )}
 
       {/* ── Main App */}
-      {authState === 'app' && ready && (
+      {authState === 'app' && (
         <div className="flex w-screen h-screen overflow-hidden relative z-10">
           <Navigation user={currentUser} />
           <main className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-8">
@@ -78,4 +83,3 @@ export default function App() {
     </>
   );
 }
-

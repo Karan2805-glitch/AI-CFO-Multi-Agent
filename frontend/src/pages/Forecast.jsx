@@ -6,20 +6,20 @@ import {
 } from 'recharts';
 import {
   AlertTriangle, Info, BrainCircuit, Target,
-  CheckCircle2, Zap, TrendingUp
+  CheckCircle2, Zap, TrendingUp, ShieldAlert, Database
 } from 'lucide-react';
-import { anomalyAlerts, recommendations, healthScore, scenarioData, forecastData } from '../mockData';
+import { useAnalysis } from '../hooks/useAnalysis';
 
 const fmt = (v) => `$${(v / 1000000).toFixed(2)}M`;
 
 // ── Anomaly Alert Card ────────────────────────────────────────────────────────
 const AlertCard = ({ a }) => {
   const styles = {
-    critical: { border: 'border-red-500/25',    bg: 'bg-red-500/8',    icon: 'text-red-400',    BIcon: AlertTriangle, label: 'bg-red-500/15 text-red-400' },
-    warning:  { border: 'border-amber-500/25',  bg: 'bg-amber-500/8',  icon: 'text-amber-400',  BIcon: AlertTriangle, label: 'bg-amber-500/15 text-amber-400' },
-    info:     { border: 'border-blue-500/25',   bg: 'bg-blue-500/8',   icon: 'text-blue-400',   BIcon: Info,          label: 'bg-blue-500/15 text-blue-400' },
+    critical: { border: 'border-red-500/25',   bg: 'bg-red-500/8',   icon: 'text-red-400',   BIcon: AlertTriangle, label: 'bg-red-500/15 text-red-400'   },
+    warning:  { border: 'border-amber-500/25', bg: 'bg-amber-500/8', icon: 'text-amber-400', BIcon: AlertTriangle, label: 'bg-amber-500/15 text-amber-400' },
+    info:     { border: 'border-blue-500/25',  bg: 'bg-blue-500/8',  icon: 'text-blue-400',  BIcon: Info,          label: 'bg-blue-500/15 text-blue-400'   },
   };
-  const s = styles[a.severity];
+  const s = styles[a.severity] ?? styles.info;
   return (
     <div className={`glass border ${s.border} ${s.bg} rounded-xl p-4 flex gap-3`}>
       <s.BIcon size={18} className={`${s.icon} shrink-0 mt-0.5`} />
@@ -38,12 +38,11 @@ const AlertCard = ({ a }) => {
 // ── Recommendation Card ───────────────────────────────────────────────────────
 const RecCard = ({ r, i }) => {
   const c = {
-    red:    { badge: 'bg-red-500/15 text-red-400',    dot: 'bg-red-500'    },
-    amber:  { badge: 'bg-amber-500/15 text-amber-400',dot: 'bg-amber-500'  },
-    blue:   { badge: 'bg-blue-500/15 text-blue-400',  dot: 'bg-blue-500'   },
-    purple: { badge: 'bg-purple-500/15 text-purple-400',dot:'bg-purple-500'},
-  }[r.color] || {};
-
+    red:    { badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500'    },
+    amber:  { badge: 'bg-amber-500/15 text-amber-400',   dot: 'bg-amber-500'  },
+    blue:   { badge: 'bg-blue-500/15 text-blue-400',     dot: 'bg-blue-500'   },
+    purple: { badge: 'bg-purple-500/15 text-purple-400', dot: 'bg-purple-500' },
+  }[r.color] ?? {};
   return (
     <div className="glass border border-white/7 rounded-xl p-4 flex gap-3 hover:border-white/12 transition-colors">
       <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 text-slate-400 text-xs font-bold shrink-0">
@@ -65,31 +64,26 @@ const RecCard = ({ r, i }) => {
 };
 
 // ── Health Score ──────────────────────────────────────────────────────────────
-const HealthScore = () => (
+const HealthScore = ({ healthScore }) => (
   <div className="glass border border-emerald-500/15 rounded-2xl p-5 glow-green">
     <div className="flex items-center gap-2 mb-5">
       <CheckCircle2 size={16} className="text-emerald-400" />
       <h3 className="text-sm font-semibold text-slate-200">Financial Health Score</h3>
     </div>
     <div className="flex items-center gap-6">
-      {/* Ring */}
       <div className="health-ring shrink-0">
         <div className="health-ring-inner">
           <span className="text-3xl font-black text-emerald-400">{healthScore.score}</span>
           <span className="text-[10px] text-slate-500">/100</span>
         </div>
       </div>
-      {/* Breakdown */}
       <div className="flex-1 flex flex-col gap-2.5">
         <p className="text-base font-bold text-emerald-400">{healthScore.label}</p>
         {healthScore.breakdown.map((b) => (
           <div key={b.name} className="flex items-center gap-3">
             <p className="text-xs text-slate-400 w-36 shrink-0">{b.name}</p>
             <div className="flex-1 h-1.5 rounded-full bg-white/5">
-              <div
-                className="h-full rounded-full bg-emerald-500 transition-all duration-700"
-                style={{ width: `${b.score}%` }}
-              />
+              <div className="h-full rounded-full bg-emerald-500 transition-all duration-700" style={{ width: `${b.score}%` }} />
             </div>
             <p className="text-xs font-semibold text-slate-300 w-8 text-right">{b.score}</p>
           </div>
@@ -100,11 +94,11 @@ const HealthScore = () => (
 );
 
 // ── Forecast Chart ────────────────────────────────────────────────────────────
-const ForecastChart = () => (
+const ForecastChart = ({ forecastData }) => (
   <div className="glass border border-white/7 rounded-2xl p-5">
     <div className="flex items-center gap-2 mb-4">
       <Zap size={16} className="text-amber-400" />
-      <h3 className="text-sm font-semibold text-slate-200">Revenue Forecast (Linear Regression)</h3>
+      <h3 className="text-sm font-semibold text-slate-200">Revenue Forecast (ARIMA / Linear Regression)</h3>
     </div>
     <ResponsiveContainer width="100%" height={200}>
       <AreaChart data={forecastData} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
@@ -127,17 +121,42 @@ const ForecastChart = () => (
           labelStyle={{ color: '#94A3B8' }}
           itemStyle={{ color: '#F1F5F9' }}
         />
-        <ReferenceLine x="Dec" stroke="rgba(255,255,255,0.15)" strokeDasharray="4 2" label={{ value: 'Forecast →', fill: '#64748B', fontSize: 10 }} />
         <Area type="monotone" dataKey="revenue"  stroke="#3B82F6" strokeWidth={2} fill="url(#gRev)"   dot={false} />
         <Area type="monotone" dataKey="forecast" stroke="#F59E0B" strokeWidth={2} fill="url(#gFcast)" dot={{ r: 4, fill: '#F59E0B' }} strokeDasharray="6 3" />
       </AreaChart>
     </ResponsiveContainer>
-    <p className="text-xs text-slate-500 mt-2 text-center">Q1 projected revenue: $4.95M · Growth trend: +5.3%/mo</p>
+    <p className="text-xs text-slate-500 mt-2 text-center">
+      Blue = historical · Amber dashed = AI-forecasted next 3 periods
+    </p>
   </div>
 );
 
+// ── Risk Banner ───────────────────────────────────────────────────────────────
+const RiskBanner = ({ risk }) => {
+  if (!risk) return null;
+  const lvlColor = {
+    LOW: 'border-emerald-500/25 bg-emerald-500/8 text-emerald-400',
+    MEDIUM: 'border-amber-500/25 bg-amber-500/8 text-amber-400',
+    HIGH: 'border-red-500/25 bg-red-500/8 text-red-400',
+    CRITICAL: 'border-red-700/40 bg-red-700/12 text-red-300',
+  }[risk.risk_level] ?? 'border-white/10 bg-white/5 text-slate-400';
+  return (
+    <div className={`glass border rounded-xl p-4 flex items-start gap-3 ${lvlColor}`}>
+      <ShieldAlert size={18} className="shrink-0 mt-0.5" />
+      <div>
+        <p className="text-sm font-semibold">Risk Level: {risk.risk_level}</p>
+        {risk.risk_flags?.length > 0 && (
+          <ul className="mt-1 list-disc list-inside text-xs opacity-80 space-y-0.5">
+            {risk.risk_flags.map((f, i) => <li key={i}>{f}</li>)}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ── Scenario Analysis ─────────────────────────────────────────────────────────
-const ScenarioAnalysis = () => (
+const ScenarioAnalysis = ({ scenarioData }) => (
   <div className="glass border border-white/7 rounded-2xl p-5">
     <div className="flex items-center gap-2 mb-4">
       <Target size={16} className="text-purple-400" />
@@ -156,7 +175,7 @@ const ScenarioAnalysis = () => (
         />
         <Bar dataKey="profit" radius={[0, 6, 6, 0]}>
           {scenarioData.map((d, i) => (
-            <Cell key={i} fill={d.profit >= 4000000 ? '#10B981' : '#F43F5E'} opacity={0.85} />
+            <Cell key={i} fill={d.profit >= (scenarioData[0]?.profit ?? 0) ? '#10B981' : '#F43F5E'} opacity={0.85} />
           ))}
         </Bar>
       </BarChart>
@@ -165,46 +184,73 @@ const ScenarioAnalysis = () => (
 );
 
 // ── Forecast Page ─────────────────────────────────────────────────────────────
-const Forecast = () => (
-  <div className="flex flex-col gap-6 page-enter">
-    {/* Header */}
-    <div>
-      <h2 className="text-2xl font-bold text-slate-100">Forecast Engine & AI Advisor</h2>
-      <p className="text-slate-400 text-sm mt-0.5">Anomaly detection, smart recommendations, health score, and scenario planning.</p>
-    </div>
+const Forecast = () => {
+  const {
+    forecastData, anomalyAlerts, recommendations,
+    healthScore, scenarioData, risk, auditorExplanation, isReal
+  } = useAnalysis();
 
-    {/* Forecast + Health Score */}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <ForecastChart />
-      <HealthScore />
-    </div>
+  return (
+    <div className="flex flex-col gap-6 page-enter">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-100">Forecast Engine & AI Advisor</h2>
+          <p className="text-slate-400 text-sm mt-0.5">Anomaly detection, smart recommendations, health score, and scenario planning.</p>
+        </div>
+        {isReal && (
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
+            <Database size={11} /> Live data
+          </span>
+        )}
+      </div>
 
-    {/* Anomaly Alerts */}
-    <div>
-      <div className="flex items-center gap-2 mb-3">
-        <AlertTriangle size={16} className="text-red-400" />
-        <h3 className="text-sm font-semibold text-slate-200">AI-Detected Anomalies</h3>
-        <span className="text-[10px] bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full font-bold">{anomalyAlerts.length} alerts</span>
-      </div>
-      <div className="flex flex-col gap-3 stagger">
-        {anomalyAlerts.map((a) => <AlertCard key={a.id} a={a} />)}
-      </div>
-    </div>
+      {/* Risk Banner (only when real data) */}
+      {isReal && risk && <RiskBanner risk={risk} />}
 
-    {/* Recommendations */}
-    <div>
-      <div className="flex items-center gap-2 mb-3">
-        <BrainCircuit size={16} className="text-purple-400" />
-        <h3 className="text-sm font-semibold text-slate-200">Decision Engine — Smart Recommendations</h3>
-      </div>
-      <div className="flex flex-col gap-3 stagger">
-        {recommendations.map((r, i) => <RecCard key={r.id} r={r} i={i} />)}
-      </div>
-    </div>
+      {/* Auditor explanation (only when real data) */}
+      {isReal && auditorExplanation && (
+        <div className="glass border border-blue-500/10 rounded-xl p-4">
+          <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-1">AI Auditor Summary</p>
+          <p className="text-sm text-slate-300 leading-relaxed">{auditorExplanation}</p>
+        </div>
+      )}
 
-    {/* Scenario */}
-    <ScenarioAnalysis />
-  </div>
-);
+      {/* Forecast + Health Score */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ForecastChart forecastData={forecastData} />
+        <HealthScore healthScore={healthScore} />
+      </div>
+
+      {/* Anomaly Alerts */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <AlertTriangle size={16} className="text-red-400" />
+          <h3 className="text-sm font-semibold text-slate-200">AI-Detected Anomalies</h3>
+          <span className="text-[10px] bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full font-bold">
+            {anomalyAlerts.length} alerts
+          </span>
+        </div>
+        <div className="flex flex-col gap-3 stagger">
+          {anomalyAlerts.map((a) => <AlertCard key={a.id} a={a} />)}
+        </div>
+      </div>
+
+      {/* Recommendations */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <BrainCircuit size={16} className="text-purple-400" />
+          <h3 className="text-sm font-semibold text-slate-200">Decision Engine — Smart Recommendations</h3>
+        </div>
+        <div className="flex flex-col gap-3 stagger">
+          {recommendations.map((r, i) => <RecCard key={r.id} r={r} i={i} />)}
+        </div>
+      </div>
+
+      {/* Scenario */}
+      <ScenarioAnalysis scenarioData={scenarioData} />
+    </div>
+  );
+};
 
 export default Forecast;
