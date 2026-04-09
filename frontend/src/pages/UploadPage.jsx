@@ -140,9 +140,9 @@ const UploadPage = ({ onSuccess }) => {
                 <div className="flex items-start gap-3 p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/20">
                   <AlertTriangle size={16} className="text-red-400 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-red-300">Backend error</p>
-                    <p className="text-xs text-red-400/80 mt-0.5">{error}</p>
-                    <p className="text-xs text-slate-500 mt-1">Try "Demo mode" to see the dashboard with sample data.</p>
+                    <p className="text-sm font-semibold text-red-300">Upload error</p>
+                    <p className="text-xs text-red-400/80 mt-0.5 whitespace-pre-wrap">{error}</p>
+                    <p className="text-xs text-slate-500 mt-1">Fix the CSV columns or try "Demo mode" to see the dashboard with sample data.</p>
                   </div>
                 </div>
               )}
@@ -165,7 +165,7 @@ const UploadPage = ({ onSuccess }) => {
                   className={`mx-auto mb-3 transition-colors ${dragging ? 'text-blue-400' : 'text-slate-500'}`}
                 />
                 <p className="text-slate-200 font-semibold mb-1">Drop your CSV file here</p>
-                <p className="text-slate-500 text-sm mb-2">Columns: date, revenue, rent, salaries, marketing, subscriptions, utilities, other</p>
+                <p className="text-slate-500 text-sm mb-2">Columns: months, revenue, rent, salaries, marketing,<br />subscriptions, utilities, other &nbsp;<span className="text-slate-600">(or use <code className="text-blue-400/70">date</code> instead of <code className="text-blue-400/70">months</code>)</span></p>
                 <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors">
                   <FileText size={15} /> Select File
                 </span>

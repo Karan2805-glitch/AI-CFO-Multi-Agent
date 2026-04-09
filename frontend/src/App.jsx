@@ -13,16 +13,15 @@ import Forecast       from './pages/Forecast';
 import { useData }    from './context/DataContext';
 import { loadSession, saveSession, clearSession } from './lib/auth';
 
-// ── Determine initial auth state ───────────────────────────────────────────────
-// Priority: session exists + has data → skip to app
-//           session exists, no data   → skip to upload
-//           no session                 → show login
-const getInitialState = (hasData) => {
-  const session = loadSession();
-  if (!session) return 'login';
-  if (hasData)  return 'app';
-  return 'upload';
-};
+/**
+ * Initial state rules (simple & predictable):
+ *   hasData  → 'app'   (skip straight to dashboard)
+ *   no data  → 'login' (always start from login so user can pick an account)
+ *
+ * We do NOT auto-jump to 'upload' based on stale session alone,
+ * because that leaves users stuck on UploadPage with no clear way back.
+ */
+const getInitialState = (hasData) => (hasData ? 'app' : 'login');
 
 export default function App() {
   const { hasData } = useData();
@@ -32,7 +31,7 @@ export default function App() {
   const handleLogin = (user) => {
     setCurrentUser(user);
     saveSession(user);
-    // New user (first time, not guest) → onboarding
+    // New user (not guest) → onboarding wizard
     if (user.isNew && user.provider !== 'guest') {
       setAuthState('onboarding');
     } else {
@@ -56,7 +55,7 @@ export default function App() {
     <>
       <SilkBackground />
 
-      {/* Ambient radial glows */}
+      {/* Ambient glows */}
       <div className="fixed inset-0 z-[1] pointer-events-none">
         <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-blue-700/8 rounded-full blur-[130px]" />
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-700/8 rounded-full blur-[120px]" />
@@ -71,7 +70,10 @@ export default function App() {
       )}
 
       {authState === 'upload' && (
-        <UploadPage onSuccess={() => setAuthState('app')} />
+        <UploadPage
+          onSuccess={() => setAuthState('app')}
+          onBack={() => setAuthState('login')}
+        />
       )}
 
       {authState === 'app' && (

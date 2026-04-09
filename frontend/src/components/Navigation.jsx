@@ -88,8 +88,6 @@ const Navigation = ({ user, onLogout }) => {
         </button>
       </div>
 
-      </div>
-
       {/* User + Logout */}
       <div className="px-4 pb-5 border-t border-white/5 pt-4">
         <div className="glass rounded-xl px-3 py-3 flex items-center gap-3">
