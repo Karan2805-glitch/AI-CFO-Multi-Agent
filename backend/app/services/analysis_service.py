@@ -5,7 +5,7 @@ from app.agents.risk_agent import assess_risk
 from app.agents.recommendation_agent import generate_recommendations
 from app.agents.auditor_agent import generate_explanation
 from app.agents.health_agent import calculate_health_score
-from app.agents.forecast_agent import forecast_revenue, prepare_forecast_output
+from app.agents.forecast_agent import generate_forecast, prepare_forecast_output
 
 def analyze(df):
     # Step 1: Preprocess
@@ -30,7 +30,7 @@ def analyze(df):
     health_score = calculate_health_score(kpis, risk)
 
     # Step 8: Forecasting Agent
-    forecast_values = forecast_revenue(df)
+    forecast_values = generate_forecast(df)
     forecast_data = prepare_forecast_output(df, forecast_values)
 
     return {
