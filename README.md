@@ -1,126 +1,125 @@
-# 💼 AI-CFO: Multi-Agent Financial Decision Support System
+# 💼 AI-CFO: Multi-Agent Financial Intelligence Platform
 
-## 🚀 Overview
-
-AI-CFO is a multi-agent financial decision support system designed to help businesses analyze financial data and generate actionable insights. The system transforms raw financial data into meaningful decisions using a combination of data processing, machine learning, and agent-based reasoning.
+AI-CFO is a production-grade, multi-agent financial decision support system that transforms raw financial data into professional-grade executive intelligence. By orchestrating a fleet of specialized AI agents, the platform provides automated auditing, seasonal forecasting, and actionable strategic recommendations.
 
 ---
 
-## 🧠 Core Idea
+## 🚀 Key Features
 
-The system uses multiple specialized agents (KPI, Forecast, Anomaly, Risk, Recommendation, Auditor) coordinated by an orchestrator to simulate the behavior of a virtual Chief Financial Officer (CFO).
+### 🧠 Generative AI Auditor
+- **Gemini 1.5 Flash Integration:** Delivers human-readable, executive-level summaries of complex financial patterns.
+- **Rule-Based Fallback:** Ensures 100% uptime with a robust logic-tree explanation system if API limits are reached.
+
+### 📈 Advanced Forecasting Engine
+- **Multi-Model Waterfall:** Uses **Facebook Prophet** for seasonality, falling back to **ARIMA** for statistical trends, and **Linear Regression** for baseline growth.
+- **Margin Visualization:** Simultaneously projects Revenue and Expenses to visualize historical and future profit gaps.
+
+### 🛡️ Managed Risk & Anomaly Detection
+- **Statistical Guarding:** Identifies Z-score anomalies in operational spending.
+- **Risk Flagging:** Automated detection of margin compression, high expense volatility, and revenue stagnation.
+
+### 💎 Premium User Experience
+- **Glassmorphism UI:** A stunning, responsive interface with Midnight and Void (amoled) themes.
+- **Interactive Recharts:** Dynamic, hover-enabled visualizations for ledger breakdowns and time-series trends.
+- **History Sidebar:** Persistent tracking of all past analysis runs stored in a local SQLite database.
+- **PDF Export:** CFO report generation with clean, professional print-media formatting.
 
 ---
 
 ## 🧩 System Architecture
 
+```mermaid
+graph TD
+    User[(CSV Data)] --> Pre[Preprocessing & Interpolation]
+    Pre --> Orchestrator{Analysis Service}
+    
+    Orchestrator --> KPI[KPI Agent]
+    Orchestrator --> Forecast[Forecast Engine - Prophet/ARIMA]
+    Orchestrator --> Anomaly[Anomaly Detector]
+    Orchestrator --> Risk[Risk Assessment]
+    Orchestrator --> Audit[Generative AI Auditor - Gemini]
+    
+    KPI & Forecast & Anomaly & Risk & Audit --> Results[Result Aggregator]
+    Results --> DB[(SQLite History)]
+    Results --> UI[Interactive Executive Dashboard]
 ```
-CSV Upload → Preprocessing → Normalization → Multi-Agent Analysis → Decision Layer → Dashboard
-```
-
----
-
-## 🔷 Key Features
-
-* 📊 KPI Calculation (Revenue, Expenses, Profit, Margin)
-* 📈 Forecasting (Future revenue prediction)
-* ⚠️ Anomaly Detection (Expense spikes, irregularities)
-* 🎯 Smart Recommendations (Actionable insights)
-* 🧠 Financial Health Score
-* 🔍 Auditor Module (Explainable AI decisions)
-
----
-
-## 🧠 Multi-Agent System
-
-* **KPI Agent** → Computes financial metrics
-* **Forecast Agent** → Predicts future trends
-* **Anomaly Agent** → Detects unusual patterns
-* **Risk Agent** → Evaluates financial risks
-* **Recommendation Agent** → Generates decisions
-* **Auditor Agent** → Explains reasoning behind decisions
 
 ---
 
 ## ⚙️ Tech Stack
 
-* **Frontend:** HTML / React (optional)
-* **Backend:** FastAPI
-* **ML & Data:** Python, Pandas, Scikit-learn
-* **Database:** PostgreSQL (planned)
+- **Frontend:** React, Tailwind CSS, Recharts, Lucide Icons, Context API.
+- **Backend:** FastAPI (Python 3.11), SQLAlchemy, Pandas.
+- **ML Layer:** Facebook Prophet, Statsmodels, Scikit-learn, Google Generative AI SDK.
+- **DevOps:** Docker, Docker Compose.
 
 ---
 
 ## 📂 Project Structure
 
-```
-frontend/
-backend/
-  ├── app/
-  │   ├── routes/
-  │   ├── services/
-  │   ├── agents/
-  │   └── models/
-data/
-docs/
-```
-
----
-
-## 🔌 API Contract
-
-### POST /analyze
-
-**Input:**
-
-* CSV file upload
-
-**Output:**
-
-```json
-{
-  "kpi": {},
-  "forecast": 0,
-  "anomalies": [],
-  "recommendations": [],
-  "health_score": 0,
-  "auditor": {
-    "explanation": ""
-  }
-}
+```text
+├── frontend/             # React SPA (Vite)
+│   ├── src/components/   # Modular UI elements
+│   ├── src/pages/        # Dashboard, Forecast, Ledger views
+│   └── Dockerfile        # Frontend container config
+├── backend/              # FastAPI Server
+│   ├── app/agents/       # Specialized AI logic
+│   ├── app/routes/       # REST API Endpoints
+│   ├── aicfo.db          # Persistence (SQLite)
+│   └── Dockerfile        # Python container config
+└── docker-compose.yml    # Full stack orchestration
 ```
 
 ---
 
-## 🚀 Current Progress
+## 🛠️ Getting Started
 
-* [x] Project structure setup
-* [ ] Backend API
-* [ ] ML Agents
-* [ ] Frontend Integration
-* [ ] LLM Auditor (Planned)
+### Prerequisites
+- Docker & Docker Compose **(Recommended)**
+- OR Python 3.11+ & Node 18+
+
+### Fast Track (Docker)
+1. Clone the repository.
+2. Create `backend/.env` and add:
+   ```env
+   GEMINI_API_KEY=your_key_here
+   ```
+3. Run the orchestration:
+   ```bash
+   docker compose up --build
+   ```
+
+### Local Setup
+**Backend:**
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # venv\Scripts\activate on Windows
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
-## 👥 Team
-
-* Backend Developer
-* ML Engineer
-* Frontend Developer
-* Integration & Documentation
+## 📊 Sample Data Format
+The system accepts CSV files with the following columns:
+`months` (or `date`), `revenue`, `rent`, `salaries`, `marketing`, `subscriptions`, `utilities`, `other`.
 
 ---
 
-## 📌 Future Scope
-
-* LLM-based Auditor Agent
-* Scenario Simulation Engine
-* Real-time data integration
+## 🎯 Future Roadmap
+- [ ] Direct integration with ERP APIs (Stripe, QuickBooks).
+- [ ] Multi-user team workspaces and RBAC.
+- [ ] Scenario Simulation "What-If" Playground.
 
 ---
 
 ## 🧠 Summary
-
-AI-CFO is designed as an intelligent, explainable, and modular financial system that assists businesses in making better financial decisions using AI-driven insights.
-
----
+AI-CFO is designed as an intelligent, explainable, and modular financial system that assists businesses in making better financial decisions using AI-driven insights. It bridges the gap between raw spreadsheets and executive-level strategy.
