@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useAnalysis } from '../hooks/useAnalysis';
 import HealthScoreGauge from '../components/dashboard/HealthScoreGauge';
+import RevenueForecastChart from '../components/dashboard/charts/RevenueForecastChart';
+import { useData } from '../context/DataContext';
 
 const fmt = (v) => `$${(v / 1000000).toFixed(2)}M`;
 
@@ -220,6 +222,13 @@ const Forecast = () => {
     healthScore, scenarioData, risk, auditorExplanation, isReal
   } = useAnalysis();
 
+  const { dashboardData } = useData();
+  const safeArray = (v) => Array.isArray(v) ? v : [];
+  
+  const revenueTrend = safeArray(dashboardData?.charts?.revenue_trend);
+  const expenseTrend = safeArray(dashboardData?.charts?.expense_trend);
+  const forecast = safeArray(dashboardData?.charts?.forecast);
+
   return (
     <div className="flex flex-col gap-8 pb-10 page-enter">
       {/* ── HEADER ────────────────────────────────────────────────────── */}
@@ -234,6 +243,15 @@ const Forecast = () => {
             Live Sync
           </span>
         )}
+      </section>
+
+      {/* ── CENTRAL FORECAST PROJECTION CHART ────────────────────────── */}
+      <section className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        <RevenueForecastChart 
+          revenueTrend={revenueTrend} 
+          forecast={forecast} 
+          expenseTrend={expenseTrend}
+        />
       </section>
 
       {/* ── RISK & AUDITOR ────────────────────────────────────────────── */}

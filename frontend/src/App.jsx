@@ -78,7 +78,11 @@ export default function App() {
 
       {authState === 'app' && (
         <div className="flex w-screen h-screen overflow-hidden relative z-10">
-          <Navigation user={currentUser} onLogout={handleLogout} />
+          <Navigation 
+            user={currentUser} 
+            onLogout={handleLogout} 
+            onNewUpload={() => setAuthState('upload')} 
+          />
           <main className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-8">
             <div className="max-w-5xl mx-auto">
               <Routes>

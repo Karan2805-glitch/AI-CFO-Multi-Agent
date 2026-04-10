@@ -1,11 +1,12 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Wallet, BrainCircuit, Activity,
-  Upload, ChevronRight, Moon, Sparkles, LogOut, UserRound
+  Upload, ChevronRight, Moon, Sparkles, LogOut, UserRound, Clock
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { clearDashboardState } from '../api/analyzeService';
+import { clearDashboardState, fetchRuns, fetchResults } from '../api/analyzeService';
+import { useData } from '../context/DataContext';
 
 const navItems = [
   { to: '/upload',    icon: Upload,          label: 'Upload Data',    color: 'group-hover:text-sky-400',    active: 'text-sky-400',    ring: 'border-sky-500/30 bg-sky-500/10'    },
@@ -14,13 +15,54 @@ const navItems = [
   { to: '/forecast',  icon: BrainCircuit,    label: 'Forecast Engine',color: 'group-hover:text-emerald-400',active: 'text-emerald-400',ring: 'border-emerald-500/30 bg-emerald-500/10'},
 ];
 
-const Navigation = ({ user, onLogout }) => {
+const Navigation = ({ user, onLogout, onNewUpload }) => {
   const loc = useLocation();
+  const nav = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const isMidnight = theme === 'midnight';
+  
+  const { setDashboardState, setLoading } = useData();
+  const [runs, setRuns] = useState([]);
+
+  useEffect(() => {
+    const raw = localStorage.getItem('aicfo_dashboard_state');
+    if (raw) {
+      try {
+        const local = JSON.parse(raw);
+        if (local.sessionId) {
+          fetchRuns(local.sessionId)
+            .then(res => setRuns(res.runs || []))
+            .catch(() => setRuns([]));
+        }
+      } catch (e) {
+        setRuns([]);
+      }
+    }
+  }, []);
+
+  const handleRunClick = async (runId) => {
+    setLoading(true);
+    try {
+      const res = await fetchResults(runId);
+      const dashboardData = res.data ?? res;
+      setDashboardState(dashboardData);
+      
+      const raw = localStorage.getItem('aicfo_dashboard_state');
+      if (raw) {
+        const local = JSON.parse(raw);
+        local.runId = runId;
+        local.dashboardData = dashboardData;
+        localStorage.setItem('aicfo_dashboard_state', JSON.stringify(local));
+      }
+      if (loc.pathname === '/upload') nav('/dashboard');
+    } catch(e) { 
+      console.error(e);
+    }
+    setLoading(false);
+  };
 
   return (
-    <aside className="w-60 h-screen sticky top-0 flex flex-col border-r border-white/5 bg-[#070B14]/90 backdrop-blur-2xl z-30 shrink-0">
+    <aside className="w-60 h-screen sticky top-0 flex flex-col border-r border-white/5 bg-[#070B14]/90 backdrop-blur-2xl z-30 shrink-0 print-hide">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-7 border-b border-white/5">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
@@ -33,13 +75,19 @@ const Navigation = ({ user, onLogout }) => {
       </div>
 
       {/* Nav links */}
-      <nav className="flex-1 px-3 py-5 flex flex-col gap-1">
+      <nav className="px-3 py-5 flex flex-col gap-1">
         {navItems.map(({ to, icon: Icon, label, active, ring }) => {
           const isActive = loc.pathname === to || (to !== '/upload' && loc.pathname.startsWith(to));
           return (
             <NavLink
               key={to}
-              to={to}
+              to={to === '/upload' ? '#' : to}
+              onClick={(e) => {
+                if (to === '/upload') {
+                  e.preventDefault();
+                  if (onNewUpload) onNewUpload();
+                }
+              }}
               className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
                 ${isActive
                   ? `${active} ${ring} border`
@@ -54,6 +102,37 @@ const Navigation = ({ user, onLogout }) => {
         })}
       </nav>
 
+      {/* History Sidebar */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4 hidden-scrollbar mt-2 border-t border-white/5 pt-4">
+        <h4 className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">
+          <Clock size={12} /> Run History
+        </h4>
+        <div className="flex flex-col gap-2">
+          {runs.map((r, i) => (
+            <button
+              key={i}
+              onClick={() => handleRunClick(r.run_id)}
+              className="text-left px-3 py-2 rounded-lg bg-white/3 border border-white/5 hover:bg-white/10 transition-colors flex flex-col"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] font-semibold text-slate-300">Run #{r.run_id.split('_')[1]?.substring(0,4)}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                  r.health_score > 70 ? 'bg-emerald-500/20 text-emerald-400' : 
+                  r.health_score > 40 ? 'bg-amber-500/20 text-amber-400' : 
+                  'bg-red-500/20 text-red-400'
+                }`}>Health: {r.health_score}</span>
+              </div>
+              <span className="text-[10px] text-slate-500 mt-1">
+                {r.created_at ? new Date(r.created_at).toLocaleDateString() : 'A moment ago'}
+              </span>
+            </button>
+          ))}
+          {runs.length === 0 && (
+            <p className="text-xs text-slate-500">No recent runs</p>
+          )}
+        </div>
+      </div>
+
       {/* ── Theme switcher */}
       <div className="px-4 pb-4">
         <button
@@ -63,14 +142,11 @@ const Navigation = ({ user, onLogout }) => {
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/8 bg-white/3
             hover:bg-white/8 hover:border-white/15 transition-all duration-300 group"
         >
-          {/* Toggle track */}
           <div className={`relative w-9 h-5 rounded-full transition-all duration-400 flex-shrink-0 ${
             isMidnight ? 'bg-blue-600/40' : 'bg-white/10'
           }`}>
             <div className={`absolute top-0.5 w-4 h-4 rounded-full shadow transition-all duration-300 ${
-              isMidnight
-                ? 'left-0.5 bg-blue-400'
-                : 'left-[18px] bg-slate-300'
+              isMidnight ? 'left-0.5 bg-blue-400' : 'left-[18px] bg-slate-300'
             }`} />
           </div>
           <div className="flex-1 text-left">
@@ -81,15 +157,12 @@ const Navigation = ({ user, onLogout }) => {
               {isMidnight ? 'Navy blue' : 'Pure black'}
             </p>
           </div>
-          {isMidnight
-            ? <Sparkles size={13} className="text-blue-400 flex-shrink-0" />
-            : <Moon size={13} className="text-slate-400 flex-shrink-0" />
-          }
+          {isMidnight ? <Sparkles size={13} className="text-blue-400 flex-shrink-0" /> : <Moon size={13} className="text-slate-400 flex-shrink-0" />}
         </button>
       </div>
 
       {/* User + Logout */}
-      <div className="px-4 pb-5 border-t border-white/5 pt-4">
+      <div className="px-4 pb-5 border-t border-white/5 pt-4 print-hide">
         <div className="glass rounded-xl px-3 py-3 flex items-center gap-3">
           {user?.photo
             ? <img src={user.photo} alt="avatar" className="w-7 h-7 rounded-full object-cover shrink-0" />

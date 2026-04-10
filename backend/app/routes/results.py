@@ -35,6 +35,7 @@ def get_result(run_id: str, db: Session = Depends(get_db)):
         # 🔹 Charts (frontend ready)
         "charts": {
             "revenue_trend": result.get("forecast", {}).get("historical", []),
+            "expense_trend": result.get("forecast", {}).get("historical_expenses", []),
             "forecast": result.get("forecast", {}).get("forecast", []),
             "expense_breakdown": result.get("kpi", {}).get("expense_breakdown", {})
         },

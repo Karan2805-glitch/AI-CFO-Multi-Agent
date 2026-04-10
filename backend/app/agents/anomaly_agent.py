@@ -14,11 +14,8 @@ except Exception:
 def detect_anomalies_ml(df):
     try:
         # Use key financial features
-        features = df[[
-            "revenue", "rent", "salaries",
-            "marketing", "subscriptions", "utilities", "other"
-        ]]
-
+        expense_cols = df.columns.drop(["date", "revenue"], errors="ignore")
+        features = df[["revenue"] + list(expense_cols)]
         model = IsolationForest(contamination=0.2, random_state=42)
         preds = model.fit_predict(features)
 

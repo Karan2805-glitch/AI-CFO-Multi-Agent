@@ -3,7 +3,7 @@ def max_risk(current, new):
     return levels[max(levels.index(current), levels.index(new))]
 
 
-def assess_risk(kpis, ratios):
+def assess_risk(kpis, ratios, df=None):
     risk_flags = []
     risk_level = "LOW"
 
@@ -35,6 +35,18 @@ def assess_risk(kpis, ratios):
 
     if expense_ratios.get("rent_ratio", 0) > 30:
         risk_flags.append("High fixed cost (rent)")
+    
+    # Salary risk
+    if expense_ratios.get("salaries_ratio", 0) > 40:
+        risk_flags.append("High salary expenses")
+        risk_level = max_risk(risk_level, "HIGH")
+
+    # Revenue volatility risk
+    if df is not None and len(df) > 1:
+        volatility = df["revenue"].pct_change().std()
+        if volatility > 0.3:
+            risk_flags.append("High revenue volatility")
+            risk_level = max_risk(risk_level, "HIGH")
 
     return {
         "risk_level": risk_level,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Database, Loader2, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, Database, Loader2, ShieldAlert, Download } from 'lucide-react';
 import KPICard from '../components/dashboard/KPICard';
 import RiskBadge from '../components/dashboard/RiskBadge';
 import HealthScoreGauge from '../components/dashboard/HealthScoreGauge';
@@ -67,6 +67,7 @@ export default function Dashboard() {
   const riskLevel = dashboardData?.risk?.level;
   const riskFlags = safeArray(dashboardData?.risk?.details?.risk_flags);
   const revenueTrend = safeArray(dashboardData?.charts?.revenue_trend);
+  const expenseTrend = safeArray(dashboardData?.charts?.expense_trend);
   const forecast = safeArray(dashboardData?.charts?.forecast);
   const expenseBreakdown = dashboardData?.charts?.expense_breakdown ?? {};
   const summary = dashboardData?.insights?.summary;
@@ -82,7 +83,14 @@ export default function Dashboard() {
           <p className="text-slate-400 text-sm mt-1">Multi-Agent CFO intelligence report</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold tracking-wide uppercase shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+          <button 
+            onClick={() => window.print()}
+            className="print-hide flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs font-semibold hover:bg-white/10 hover:text-white transition-colors"
+          >
+            <Download size={14} />
+            Export PDF
+          </button>
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold tracking-wide uppercase shadow-[0_0_15px_rgba(16,185,129,0.15)] print-hide">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Live Sync
           </span>
@@ -134,7 +142,11 @@ export default function Dashboard() {
 
       {/* ── MIDDLE SECTION (Analysis) ────────────────────────────────────── */}
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <RevenueForecastChart revenueTrend={revenueTrend} forecast={forecast} />
+        <RevenueForecastChart 
+          revenueTrend={revenueTrend} 
+          forecast={forecast} 
+          expenseTrend={expenseTrend}
+        />
         <ExpenseBreakdownChart expenseBreakdown={expenseBreakdown} />
       </section>
 
@@ -179,7 +191,7 @@ export default function Dashboard() {
       </section>
 
       {/* ── AI ASSISTANT SECTION (Chatbot) ───────────────────────────────── */}
-      <section className="mt-2">
+      <section className="mt-2 print-hide">
         <AIChatbot />
       </section>
       

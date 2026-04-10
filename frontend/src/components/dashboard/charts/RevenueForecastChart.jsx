@@ -12,19 +12,31 @@ const fmt = (v) => {
   return `$${v}`;
 };
 
-const buildData = (revenueTrend, forecast) => {
+const buildData = (revenueTrend, forecast, expenseTrend) => {
   const hist = Array.isArray(revenueTrend) ? revenueTrend : [];
   const fore = Array.isArray(forecast)     ? forecast      : [];
+  const exps = Array.isArray(expenseTrend) ? expenseTrend   : [];
+  
   const data = [];
-  hist.forEach((v) => {
+  hist.forEach((v, i) => {
     const revenueVal = typeof v === 'object' && v !== null ? v.revenue : v;
     const periodVal = typeof v === 'object' && v !== null && v.month ? v.month : `M${data.length + 1}`;
-    data.push({ period: periodVal, revenue: revenueVal, forecast: null });
+    data.push({ 
+      period: periodVal, 
+      revenue: revenueVal, 
+      expenses: exps[i] ?? 0,
+      forecast: null 
+    });
   });
   fore.forEach((v) => {
     const forecastVal = typeof v === 'object' && v !== null ? v.revenue || v.forecast : v;
     const periodVal = typeof v === 'object' && v !== null && v.month ? v.month : `F${data.length + 1}`;
-    data.push({ period: periodVal, revenue: null, forecast: forecastVal });
+    data.push({ 
+      period: periodVal, 
+      revenue: null, 
+      expenses: null,
+      forecast: forecastVal 
+    });
   });
   return data;
 };
@@ -43,10 +55,10 @@ const CustomTooltip = ({ active, payload, label }) => {
       <p className="text-slate-400 mb-2 font-semibold tracking-wider uppercase text-[10px]">{label}</p>
       {payload.map((p) => (
         p.value != null && (
-          <div key={p.dataKey} className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />
+          <div key={p.dataKey} className="flex items-center gap-2 mt-1">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: p.color }} />
             <span className="text-slate-300">{p.name}:</span>
-            <span className="font-bold" style={{ color: p.color }}>{fmt(p.value)}</span>
+            <span className="font-bold ml-auto" style={{ color: p.color }}>{fmt(p.value)}</span>
           </div>
         )
       ))}
@@ -54,10 +66,10 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function RevenueForecastChart({ revenueTrend, forecast }) {
-  const data = buildData(revenueTrend, forecast);
+export default function RevenueForecastChart({ revenueTrend, forecast, expenseTrend }) {
+  const data = buildData(revenueTrend, forecast, expenseTrend);
   const splitIdx = Array.isArray(revenueTrend) ? revenueTrend.length : 0;
-  const splitPeriod = splitIdx > 0 ? `M${splitIdx}` : null;
+  const splitPeriod = splitIdx > 0 ? (data[splitIdx - 1]?.period) : null;
 
   const empty = data.length === 0;
 
@@ -84,17 +96,21 @@ export default function RevenueForecastChart({ revenueTrend, forecast }) {
             <TrendingUp size={15} className="text-blue-400" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-100">Revenue Trend &amp; Forecast</p>
-            <p className="text-[11px] text-slate-500">Historical performance + AI projection</p>
+            <p className="text-sm font-bold text-slate-100">Revenue &amp; Expense Projections</p>
+            <p className="text-[11px] text-slate-500">Margin analysis + AI forecast</p>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-[11px]">
+        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider">
           <span className="flex items-center gap-1.5 text-blue-400">
-            <span className="w-3 h-0.5 rounded-full bg-blue-400" />
-            Historical
+            <span className="w-2 h-2 rounded-full bg-blue-400" />
+            Revenue
+          </span>
+          <span className="flex items-center gap-1.5 text-rose-400">
+            <span className="w-2 h-2 rounded-full bg-rose-400" />
+            Expenses
           </span>
           <span className="flex items-center gap-1.5 text-amber-400">
-            <span className="w-3 h-0.5 rounded-full bg-amber-400 border-dashed" style={{ borderTop: '2px dashed #F59E0B', background: 'none' }} />
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
             Forecast
           </span>
         </div>
@@ -108,12 +124,16 @@ export default function RevenueForecastChart({ revenueTrend, forecast }) {
             <p className="text-sm">No revenue data available.</p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
               <defs>
                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.25} />
                   <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#F43F5E" stopOpacity={0.20} />
+                  <stop offset="95%" stopColor="#F43F5E" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="fcastGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#F59E0B" stopOpacity={0.20} />
@@ -142,9 +162,19 @@ export default function RevenueForecastChart({ revenueTrend, forecast }) {
                   x={splitPeriod}
                   stroke="rgba(255,255,255,0.12)"
                   strokeDasharray="4 4"
-                  label={{ value: 'Forecast →', position: 'insideTopRight', fill: '#64748B', fontSize: 10 }}
+                  label={{ value: 'PROJECTION →', position: 'insideTopRight', fill: '#64748B', fontSize: 9, fontWeight: 700 }}
                 />
               )}
+
+              <Area
+                type="monotone"
+                dataKey="expenses"
+                name="Expenses"
+                stroke="#F43F5E"
+                strokeWidth={2}
+                fill="url(#expGrad)"
+                dot={false}
+              />
 
               <Area
                 type="monotone"

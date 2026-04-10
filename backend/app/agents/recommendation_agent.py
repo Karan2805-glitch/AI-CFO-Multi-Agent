@@ -1,4 +1,4 @@
-def generate_recommendations(kpis, ratios, risk):
+def generate_recommendations(kpis, ratios, risk, df=None):
     recommendations = []
 
     profit_margin = kpis["profit_margin"]
@@ -39,6 +39,18 @@ def generate_recommendations(kpis, ratios, risk):
         recommendations.append(
             "Immediate financial restructuring is recommended due to high risk levels"
         )
+
+    # 📈 ML Correlation Growth Insights
+    if df is not None and len(df) >= 3 and "revenue" in df.columns:
+        numeric_df = df.select_dtypes(include=['number'])
+        if not numeric_df.empty:
+            corrs = numeric_df.corr(numeric_only=True).get("revenue", {})
+            for col, corr_val in corrs.items():
+                if col != "revenue" and corr_val > 0.8:
+                    capitalized = col.replace("_", " ").title()
+                    recommendations.append(
+                        f"Machine Learning insight: {capitalized} shows a direct, positive correlation (>80%) with revenue growth. Consider strategic budget increases here."
+                    )
 
     # ✅ If everything is good
     if not recommendations:

@@ -55,6 +55,11 @@ export const fetchResults = async (runId) => {
   return parseJson(response);
 };
 
+export const fetchRuns = async (sessionId) => {
+  const response = await fetch(`${API_BASE}/runs/${encodeURIComponent(sessionId)}`);
+  return parseJson(response);
+};
+
 export const runDashboardFlow = async ({ file, sessionPayload, onStep }) => {
   onStep?.(0);
   const sessionRes = await startSession(sessionPayload);

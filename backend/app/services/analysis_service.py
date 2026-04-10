@@ -18,16 +18,16 @@ def analyze(df):
     ratios = calculate_ratios(kpis)
 
     # Step 4: Risk Agent
-    risk = assess_risk(kpis, ratios)
+    risk = assess_risk(kpis, ratios, df)
 
     # Step 5: Recommendation Agent
-    recommendations = generate_recommendations(kpis, ratios, risk)
+    recommendations = generate_recommendations(kpis, ratios, risk, df)
 
     # Step 6: Auditor Agent
     auditor = generate_explanation(kpis, ratios, risk, recommendations["recommendations"])
 
     # Step 7: Health Agent
-    health_score = calculate_health_score(kpis, risk)
+    health_score = calculate_health_score(df, kpis, ratios, risk)
 
     # Step 8: Forecasting Agent
     forecast_values = generate_forecast(df)

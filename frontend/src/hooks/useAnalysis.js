@@ -11,11 +11,13 @@ export const useAnalysis = () => {
   
   const revenueTrend = dashboardData?.charts?.revenue_trend ?? [];
   const forecastTrend = dashboardData?.charts?.forecast ?? [];
+  const expenseTrend = dashboardData?.charts?.expense_trend ?? [];
 
   const combinedForecast = [
     ...revenueTrend.map((v, i) => ({
       month: v.month || `P${i + 1}`,
       revenue: v.revenue ?? v,
+      expenses: expenseTrend[i] ?? 0,
     })),
     ...forecastTrend.map((v, i) => ({
       month: v.month || `P${revenueTrend.length + i + 1}`,
