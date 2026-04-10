@@ -5,7 +5,7 @@ import {
   Upload, ChevronRight, Moon, Sparkles, LogOut, UserRound
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { clearAnalysis } from '../api/analyzeService';
+import { clearDashboardState } from '../api/analyzeService';
 
 const navItems = [
   { to: '/upload',    icon: Upload,          label: 'Upload Data',    color: 'group-hover:text-sky-400',    active: 'text-sky-400',    ring: 'border-sky-500/30 bg-sky-500/10'    },
@@ -102,7 +102,7 @@ const Navigation = ({ user, onLogout }) => {
             <p className="text-[10px] text-slate-600 truncate">{user?.email ?? 'guest session'}</p>
           </div>
           <button
-            onClick={() => { if (onLogout) { clearAnalysis(); onLogout(); } }}
+            onClick={() => { if (onLogout) { clearDashboardState(); onLogout(); } }}
             title="Sign out"
             className="p-1.5 rounded-lg hover:bg-red-500/15 hover:text-red-400 text-slate-500 transition-all duration-200"
           >

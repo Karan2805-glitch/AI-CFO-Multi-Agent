@@ -1,204 +1,92 @@
-/**
- * useAnalysis.js
- * 
- * Adapter hook — maps the raw backend API response to the shape
- * each dashboard page expects. Falls back to mockData when no
- * real analysis is available (so pages still render during dev).
- */
 import { useData } from '../context/DataContext';
-import {
-  kpiData as mockKpi,
-  normalizationData as mockNorm,
-  trendData as mockTrend,
-  forecastData as mockForecast,
-  expenseData as mockExpenses,
-  anomalyAlerts as mockAnomalies,
-  benchmarkData as mockBenchmark,
-  recommendations as mockRecommendations,
-  healthScore as mockHealth,
-  scenarioData as mockScenario,
-} from '../mockData';
 
-const fmt = (v) => {
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
-  if (v >= 1_000)     return `$${(v / 1_000).toFixed(1)}k`;
-  return `$${v}`;
-};
-
-const pct = (v) => `${parseFloat(v).toFixed(1)}%`;
+const COLORS = [
+  '#3B82F6', '#F43F5E', '#10B981', '#F59E0B', '#8B5CF6', '#14B8A6', '#64748B'
+];
 
 export const useAnalysis = () => {
-  const { analysisData } = useData();
+  const { dashboardData } = useData();
+  const hasData = !!dashboardData;
+  const kpis = dashboardData?.kpis ?? {};
+  
+  const revenueTrend = dashboardData?.charts?.revenue_trend ?? [];
+  const forecastTrend = dashboardData?.charts?.forecast ?? [];
 
-  // ── No real data yet → fall back to mock ─────────────────────────
-  if (!analysisData) {
-    return {
-      isReal: false,
-      kpiCards: mockKpi,
-      normalization: mockNorm,
-      trendData: mockTrend,
-      forecastData: mockForecast,
-      expenseData: mockExpenses,
-      anomalyAlerts: mockAnomalies,
-      benchmarkData: mockBenchmark,
-      recommendations: mockRecommendations,
-      healthScore: mockHealth,
-      scenarioData: mockScenario,
-      risk: null,
-      auditorExplanation: null,
-    };
-  }
-
-  const { kpi, ratios, risk, recommendations, health_score, auditor, forecast, anomalies } = analysisData;
-
-  // ── KPI Cards ─────────────────────────────────────────────────────
-  const kpiCards = [
-    {
-      id: 'revenue', label: 'Total Revenue',
-      value: kpi.total_revenue,
-      formatted: fmt(kpi.total_revenue),
-      delta: `avg ${fmt(kpi.avg_monthly_revenue)}/mo`,
-      deltaPositive: true,
-      sub: 'from uploaded data',
-      color: 'blue', icon: 'DollarSign',
-    },
-    {
-      id: 'expenses', label: 'Total Expenses',
-      value: kpi.total_expenses,
-      formatted: fmt(kpi.total_expenses),
-      delta: `${pct(ratios.total_expense_ratio)} of revenue`,
-      deltaPositive: ratios.total_expense_ratio < 70,
-      sub: 'expense ratio',
-      color: 'red', icon: 'TrendingDown',
-    },
-    {
-      id: 'profit', label: 'Net Profit',
-      value: kpi.profit,
-      formatted: fmt(kpi.profit),
-      delta: kpi.profit >= 0 ? 'Profitable' : 'Running at loss',
-      deltaPositive: kpi.profit >= 0,
-      sub: 'revenue minus expenses',
-      color: 'green', icon: 'BarChart2',
-    },
-    {
-      id: 'margin', label: 'Profit Margin',
-      value: kpi.profit_margin,
-      formatted: pct(kpi.profit_margin),
-      delta: `Risk: ${risk?.risk_level ?? 'N/A'}`,
-      deltaPositive: (risk?.risk_level ?? 'HIGH') === 'LOW',
-      sub: 'vs peer avg 28.5%',
-      color: 'purple', icon: 'Activity',
-    },
+  const combinedForecast = [
+    ...revenueTrend.map((v, i) => ({
+      month: v.month || `P${i + 1}`,
+      revenue: v.revenue ?? v,
+    })),
+    ...forecastTrend.map((v, i) => ({
+      month: v.month || `P${revenueTrend.length + i + 1}`,
+      forecast: v.revenue ?? v.forecast ?? v,
+    })),
   ];
 
-  // ── Normalization ─────────────────────────────────────────────────
-  const normalization = {
-    profit_margin:   parseFloat((kpi.profit_margin / 100).toFixed(4)),
-    expense_ratio:   parseFloat((ratios.total_expense_ratio / 100).toFixed(4)),
-    salary_ratio:    parseFloat(((ratios.expense_ratios?.salaries_ratio ?? 0) / 100).toFixed(4)),
-    marketing_ratio: parseFloat(((ratios.expense_ratios?.marketing_ratio ?? 0) / 100).toFixed(4)),
-  };
+  const expensesObj = dashboardData?.charts?.expense_breakdown ?? {};
+  const totalExp = Object.values(expensesObj).reduce((sum, val) => sum + (val || 0), 0);
+  const expenseData = Object.entries(expensesObj).map(([name, value], i) => ({
+    name,
+    value,
+    pct: totalExp > 0 ? ((value / totalExp) * 100).toFixed(1) : 0,
+    color: COLORS[i % COLORS.length]
+  })).sort((a, b) => b.value - a.value);
 
-  // ── Forecast Chart (historical + forecast points) ─────────────────
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const forecastChartData = forecast.historical.map((v, i) => ({
-    month: months[i % 12] ?? `M${i+1}`,
-    revenue: v,
+  const riskLevel = dashboardData?.risk?.level ?? 'UNKNOWN';
+  const riskFlags = dashboardData?.risk?.details?.risk_flags ?? [];
+  
+  const anomalyAlerts = riskFlags.map((flag, i) => ({
+    id: i,
+    title: 'Risk Flag Detected',
+    detail: flag,
+    severity: riskLevel === 'CRITICAL' || riskLevel === 'HIGH' ? 'critical' : 'warning',
+    category: 'Risk Assessment',
+    deviation: riskLevel
   }));
-  forecast.forecast.forEach((v, i) => {
-    forecastChartData.push({
-      month: `${months[(forecast.historical.length + i) % 12]}+`,
-      forecast: v,
-    });
+
+  const recommendations = (dashboardData?.insights?.recommendations ?? []).map((text, index) => {
+    let priority = 'Low';
+    let color = 'blue';
+    if (text.toLowerCase().includes('critical') || text.toLowerCase().includes('immediate')) {
+      priority = 'High'; color = 'red';
+    } else if (text.toLowerCase().includes('consider') || text.toLowerCase().includes('monitor')) {
+      priority = 'Medium'; color = 'amber';
+    }
+    return {
+      id: index + 1,
+      action: text,
+      rationale: 'Generated by AI auditor analysis based on financial patterns.',
+      priority,
+      impact: 'Strategic',
+      color
+    };
   });
 
-  // ── Trend (rev vs expenses — use historical for revenue, extrapolate expenses) ─
-  const expBreak = kpi.expense_breakdown ?? {};
-  const totalExp = kpi.total_expenses;
-  const trendData = forecast.historical.map((rev, i) => ({
-    month: months[i % 12] ?? `M${i+1}`,
-    revenue: rev,
-    expenses: Math.round(totalExp / forecast.historical.length),
-  }));
-
-  // ── Expense Breakdown ─────────────────────────────────────────────
-  const expColors = ['#3B82F6','#F43F5E','#8B5CF6','#F59E0B','#14B8A6','#94A3B8'];
-  const expenseData = Object.entries(expBreak).map(([name, value], i) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    value,
-    pct: Math.round((value / kpi.total_expenses) * 100),
-    color: expColors[i % expColors.length],
-  }));
-
-  // ── Anomaly Alerts ────────────────────────────────────────────────
-  const severityMap = (flag) => {
-    if (flag.toLowerCase().includes('revenue drop') || flag.toLowerCase().includes('loss')) return 'critical';
-    if (flag.toLowerCase().includes('anomaly')) return 'warning';
-    return 'info';
-  };
-  const anomalyAlerts = anomalies.length > 0
-    ? anomalies.map((msg, i) => ({
-        id: i + 1,
-        severity: severityMap(msg),
-        category: 'AI Detection',
-        title: msg,
-        detail: risk?.risk_flags?.join('. ') ?? msg,
-        deviation: risk?.risk_level ?? 'N/A',
-      }))
-    : [{
-        id: 1, severity: 'info', category: 'System',
-        title: 'No anomalies detected',
-        detail: 'All financial metrics appear to be within normal ranges.',
-        deviation: '✓',
-      }];
-
-  // ── Recommendations ───────────────────────────────────────────────
-  const priorityColors = ['red','amber','blue','purple'];
-  const recList = recommendations.recommendations ?? [];
-  const recs = recList.map((text, i) => ({
-    id: i + 1,
-    priority: i === 0 ? 'High' : i === 1 ? 'High' : 'Medium',
-    action: text.split(' ').slice(0, 6).join(' ') + '…',
-    rationale: text,
-    impact: 'Based on AI analysis',
-    color: priorityColors[i % priorityColors.length],
-  }));
-
-  // ── Health Score ──────────────────────────────────────────────────
-  const healthScore = {
-    score: health_score,
-    label: health_score >= 80 ? 'Excellent' : health_score >= 60 ? 'Stable' : health_score >= 40 ? 'At Risk' : 'Critical',
-    breakdown: [
-      { name: 'Profit Margin',     score: Math.min(100, Math.round(kpi.profit_margin * 2.5)) },
-      { name: 'Expense Ratio',     score: Math.max(0, Math.round(100 - ratios.total_expense_ratio)) },
-      { name: 'Cost Distribution', score: Math.min(100, Math.round(health_score * 1.05)) },
-      { name: 'Risk Level',        score: risk?.risk_level === 'LOW' ? 90 : risk?.risk_level === 'MEDIUM' ? 70 : 40 },
-    ],
-  };
-
-  // ── Scenario Data (derived from kpi) ─────────────────────────────
-  const baseProfit = kpi.profit;
-  const scenarioData = [
-    { scenario: 'Base Case',      profit: baseProfit,                           label: 'Current' },
-    { scenario: 'Marketing -15%', profit: baseProfit + kpi.total_expenses * 0.15 * 0.136, label: '+savings' },
-    { scenario: 'Expenses -10%',  profit: baseProfit + kpi.total_expenses * 0.10,          label: '+10% cut' },
-    { scenario: 'Revenue +10%',   profit: baseProfit + kpi.total_revenue * 0.10,           label: '+10% rev' },
-    { scenario: 'Marketing +10%', profit: baseProfit - kpi.total_expenses * 0.10 * 0.136, label: '-overhead' },
+  const bData = [
+    { company: 'TCS', profitMargin: 25.2, color: '#3B82F6' },
+    { company: 'Infosys', profitMargin: 22.8, color: '#10B981' },
+    { company: 'Wipro', profitMargin: 18.5, color: '#F59E0B' },
   ];
+  if (kpis.profit_margin) {
+    bData.unshift({ company: 'Your Company', profitMargin: parseFloat(kpis.profit_margin), color: '#8B5CF6' });
+  }
 
   return {
-    isReal: true,
-    kpiCards,
-    normalization,
-    trendData,
-    forecastData: forecastChartData,
+    isReal: hasData,
+    kpiCards: [],
+    trendData: combinedForecast, // alias used by some
+    forecastData: combinedForecast,
     expenseData,
     anomalyAlerts,
-    benchmarkData: mockBenchmark, // benchmark is static (TCS/Infosys/Wipro)
-    recommendations: recs,
-    healthScore,
-    scenarioData,
-    risk,
-    auditorExplanation: auditor?.explanation ?? null,
+    benchmarkData: bData,
+    recommendations,
+    healthScore: { score: dashboardData?.health_score ?? 0, label: 'Financial Health', breakdown: [] },
+    scenarioData: [
+      { scenario: 'Current', profit: kpis.profit ?? 0 },
+      { scenario: '+10% Revenue', profit: (kpis.profit ?? 0) * 1.15 },
+      { scenario: '-10% Revenue', profit: (kpis.profit ?? 0) * 0.85 }
+    ],
+    risk: { risk_level: riskLevel, risk_flags: riskFlags },
+    auditorExplanation: dashboardData?.insights?.summary ?? null,
   };
 };

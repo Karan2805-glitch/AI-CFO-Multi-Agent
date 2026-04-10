@@ -1,51 +1,58 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { loadAnalysis, saveAnalysis, clearAnalysis } from '../api/analyzeService';
-
-/**
- * DataContext — global store for the backend analysis result.
- * Hydrates from localStorage on mount so data persists across refreshes.
- * 
- * Shape of `analysisData`:
- * {
- *   kpi:             { total_revenue, total_expenses, profit, profit_margin,
- *                      avg_monthly_revenue, expense_breakdown }
- *   ratios:          { expense_ratios, total_expense_ratio, profit_margin }
- *   risk:            { risk_level, risk_flags }
- *   recommendations: { recommendations: [...strings] }
- *   health_score:    number (0-100)
- *   auditor:         { explanation: string }
- *   forecast:        { historical: [...], forecast: [...] }
- *   anomalies:       [...strings]
- * }
- */
+import React, { createContext, useContext, useMemo, useState } from 'react';
+import { clearDashboardState, loadDashboardState, saveDashboardState } from '../api/analyzeService';
 
 const DataContext = createContext({
-  analysisData: null,
-  setAnalysisData: () => {},
+  sessionId: null,
+  runId: null,
+  dashboardData: null,
+  setDashboardState: () => {},
+  setLoading: () => {},
+  setError: () => {},
+  loading: false,
+  error: null,
   clearData: () => {},
   hasData: false,
 });
 
 export const DataProvider = ({ children }) => {
-  const [analysisData, setAnalysisDataState] = useState(() => loadAnalysis());
+  const persisted = loadDashboardState();
+  const [sessionId, setSessionId] = useState(persisted?.sessionId ?? null);
+  const [runId, setRunId] = useState(persisted?.runId ?? null);
+  const [dashboardData, setDashboardData] = useState(persisted?.dashboardData ?? null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const setAnalysisData = (data) => {
-    setAnalysisDataState(data);
-    if (data) saveAnalysis(data);
+  const setDashboardState = (state) => {
+    setSessionId(state?.sessionId ?? null);
+    setRunId(state?.runId ?? null);
+    setDashboardData(state?.dashboardData ?? null);
+    if (state) saveDashboardState(state);
   };
 
   const clearData = () => {
-    setAnalysisDataState(null);
-    clearAnalysis();
+    setSessionId(null);
+    setRunId(null);
+    setDashboardData(null);
+    setLoading(false);
+    setError(null);
+    clearDashboardState();
   };
 
+  const value = useMemo(() => ({
+    sessionId,
+    runId,
+    dashboardData,
+    setDashboardState,
+    loading,
+    setLoading,
+    error,
+    setError,
+    clearData,
+    hasData: !!dashboardData,
+  }), [sessionId, runId, dashboardData, loading, error]);
+
   return (
-    <DataContext.Provider value={{
-      analysisData,
-      setAnalysisData,
-      clearData,
-      hasData: !!analysisData,
-    }}>
+    <DataContext.Provider value={value}>
       {children}
     </DataContext.Provider>
   );

@@ -1,35 +1,85 @@
 import React from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine,
-  BarChart, Bar, Cell
+  ResponsiveContainer, BarChart, Bar, Cell
 } from 'recharts';
 import {
   AlertTriangle, Info, BrainCircuit, Target,
-  CheckCircle2, Zap, TrendingUp, ShieldAlert, Database
+  Zap, TrendingUp, ShieldAlert, Database, AlertCircle, ArrowRight
 } from 'lucide-react';
 import { useAnalysis } from '../hooks/useAnalysis';
+import HealthScoreGauge from '../components/dashboard/HealthScoreGauge';
 
 const fmt = (v) => `$${(v / 1000000).toFixed(2)}M`;
+
+// ── Shared Tooltip ────────────────────────────────────────────────────────────
+const CustomTip = ({ active, payload, label, formatter, nameFormatter }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      className="rounded-xl px-4 py-3 text-xs"
+      style={{
+        background: 'rgba(7,11,20,0.96)',
+        border: '1px solid rgba(255,255,255,0.10)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      }}
+    >
+      {label && <p className="text-slate-400 mb-2 font-semibold tracking-wider uppercase text-[10px]">{label}</p>}
+      {payload.map((p, i) => {
+        const val = formatter ? formatter(p.value) : p.value;
+        const name = nameFormatter ? nameFormatter(p.name) : p.name;
+        return (
+          <div key={i} className="flex items-center gap-2 mt-1">
+            <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.fill }} />
+            {name && <span className="text-slate-300">{name}:</span>}
+            <span className="font-bold" style={{ color: p.color || p.fill }}>{val}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 // ── Anomaly Alert Card ────────────────────────────────────────────────────────
 const AlertCard = ({ a }) => {
   const styles = {
-    critical: { border: 'border-red-500/25',   bg: 'bg-red-500/8',   icon: 'text-red-400',   BIcon: AlertTriangle, label: 'bg-red-500/15 text-red-400'   },
-    warning:  { border: 'border-amber-500/25', bg: 'bg-amber-500/8', icon: 'text-amber-400', BIcon: AlertTriangle, label: 'bg-amber-500/15 text-amber-400' },
-    info:     { border: 'border-blue-500/25',  bg: 'bg-blue-500/8',  icon: 'text-blue-400',  BIcon: Info,          label: 'bg-blue-500/15 text-blue-400'   },
+    critical: { border: 'rgba(244,63,94,0.3)', bg: 'rgba(244,63,94,0.08)', icon: '#F43F5E', glow: 'rgba(244,63,94,0.15)' },
+    warning:  { border: 'rgba(245,158,11,0.3)', bg: 'rgba(245,158,11,0.08)', icon: '#F59E0B', glow: 'rgba(245,158,11,0.15)' },
+    info:     { border: 'rgba(59,130,246,0.3)', bg: 'rgba(59,130,246,0.08)', icon: '#3B82F6', glow: 'rgba(59,130,246,0.15)' },
   };
   const s = styles[a.severity] ?? styles.info;
+  const Icon = a.severity === 'info' ? Info : AlertTriangle;
+
   return (
-    <div className={`glass border ${s.border} ${s.bg} rounded-xl p-4 flex gap-3`}>
-      <s.BIcon size={18} className={`${s.icon} shrink-0 mt-0.5`} />
+    <div
+      className="group relative flex items-start gap-4 rounded-xl p-5 transition-all duration-300 hover:scale-[1.01]"
+      style={{
+        background: 'rgba(13,21,38,0.55)',
+        border: `1px solid ${s.border}`,
+        boxShadow: `0 4px 20px ${s.glow}`,
+      }}
+    >
+      <div 
+        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+        style={{ background: s.bg, border: `1px solid ${s.border}` }}
+      >
+        <Icon size={18} color={s.icon} />
+      </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2 flex-wrap">
-          <p className="text-sm font-semibold text-slate-100">{a.title}</p>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${s.label} shrink-0`}>{a.deviation}</span>
+        <div className="flex items-start justify-between gap-3 flex-wrap mb-1">
+          <p className="text-sm font-bold text-slate-100">{a.title}</p>
+          <span 
+            className="text-[10px] font-bold px-2.5 py-0.5 rounded-full tracking-wider"
+            style={{ background: s.bg, color: s.icon, border: `1px solid ${s.border}` }}
+          >
+            {a.deviation}
+          </span>
         </div>
-        <p className="text-xs text-slate-400 mt-1 leading-relaxed">{a.detail}</p>
-        <p className="text-[10px] text-slate-500 mt-2 uppercase tracking-widest font-semibold">Category: {a.category}</p>
+        <p className="text-[13px] text-slate-300 leading-relaxed font-medium">{a.detail}</p>
+        <div className="flex items-center gap-2 mt-3">
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.icon }} />
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Category: {a.category}</p>
+        </div>
       </div>
     </div>
   );
@@ -38,54 +88,83 @@ const AlertCard = ({ a }) => {
 // ── Recommendation Card ───────────────────────────────────────────────────────
 const RecCard = ({ r, i }) => {
   const c = {
-    red:    { badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500'    },
-    amber:  { badge: 'bg-amber-500/15 text-amber-400',   dot: 'bg-amber-500'  },
-    blue:   { badge: 'bg-blue-500/15 text-blue-400',     dot: 'bg-blue-500'   },
-    purple: { badge: 'bg-purple-500/15 text-purple-400', dot: 'bg-purple-500' },
-  }[r.color] ?? {};
+    red:    { color: '#F43F5E', bg: 'rgba(244,63,94,0.1)' },
+    amber:  { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+    blue:   { color: '#3B82F6', bg: 'rgba(59,130,246,0.1)' },
+    purple: { color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)' },
+  }[r.color] ?? { color: '#10B981', bg: 'rgba(16,185,129,0.1)' };
+
   return (
-    <div className="glass border border-white/7 rounded-xl p-4 flex gap-3 hover:border-white/12 transition-colors">
-      <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 text-slate-400 text-xs font-bold shrink-0">
+    <div
+      className="group relative flex items-start gap-4 rounded-xl p-5 transition-all duration-300 hover:border-white/20"
+      style={{
+        background: 'rgba(13,21,38,0.55)',
+        border: '1px solid rgba(255,255,255,0.07)',
+      }}
+    >
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-black mt-0.5"
+        style={{ background: c.bg, color: c.color, border: `1px solid ${c.color}40` }}
+      >
         {i + 1}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <p className="text-sm font-semibold text-slate-100">{r.action}</p>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c.badge}`}>{r.priority}</span>
+        <div className="flex items-center gap-3 flex-wrap mb-2">
+          <p className="text-[14px] font-bold text-slate-100 flex-1">{r.action}</p>
+          <span 
+            className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+            style={{ background: c.bg, color: c.color, border: `1px solid ${c.color}40` }}
+          >
+            {r.priority} PRIORITY
+          </span>
         </div>
-        <p className="text-xs text-slate-400 leading-relaxed">{r.rationale}</p>
-        <div className="flex items-center gap-1.5 mt-2">
+        <p className="text-[13px] text-slate-300 leading-relaxed mb-3">{r.rationale}</p>
+        <div 
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+          style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}
+        >
           <TrendingUp size={12} className="text-emerald-400" />
-          <span className="text-xs font-semibold text-emerald-400">{r.impact}</span>
+          <span className="text-[11px] font-bold text-emerald-400 tracking-wide uppercase">Impact: {r.impact}</span>
         </div>
       </div>
+      <ArrowRight size={16} className="text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity mt-2" />
     </div>
   );
 };
 
-// ── Health Score ──────────────────────────────────────────────────────────────
-const HealthScore = ({ healthScore }) => (
-  <div className="glass border border-emerald-500/15 rounded-2xl p-5 glow-green">
-    <div className="flex items-center gap-2 mb-5">
-      <CheckCircle2 size={16} className="text-emerald-400" />
-      <h3 className="text-sm font-semibold text-slate-200">Financial Health Score</h3>
+// ── Health Score Detail ───────────────────────────────────────────────────────
+const HealthScoreDetail = ({ healthScore }) => (
+  <div
+    className="rounded-2xl p-6 glass flex flex-col sm:flex-row items-center gap-8 relative overflow-hidden"
+    style={{
+      background: 'rgba(13,21,38,0.65)',
+      border: '1px solid rgba(16,185,129,0.2)',
+      boxShadow: '0 8px 32px rgba(16,185,129,0.1)',
+    }}
+  >
+    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[80px] pointer-events-none" />
+    
+    <div className="shrink-0 relative z-10">
+       <HealthScoreGauge score={healthScore.score} />
     </div>
-    <div className="flex items-center gap-6">
-      <div className="health-ring shrink-0">
-        <div className="health-ring-inner">
-          <span className="text-3xl font-black text-emerald-400">{healthScore.score}</span>
-          <span className="text-[10px] text-slate-500">/100</span>
-        </div>
+
+    <div className="flex-1 w-full flex flex-col gap-4 relative z-10">
+      <div className="flex items-center justify-between border-b border-white/5 pb-3">
+        <h3 className="text-sm font-bold text-slate-100 uppercase tracking-widest">Diagnostic Profile</h3>
+        <span className="text-xs font-bold text-emerald-400">{healthScore.label}</span>
       </div>
-      <div className="flex-1 flex flex-col gap-2.5">
-        <p className="text-base font-bold text-emerald-400">{healthScore.label}</p>
+      
+      <div className="flex flex-col gap-3">
         {healthScore.breakdown.map((b) => (
-          <div key={b.name} className="flex items-center gap-3">
-            <p className="text-xs text-slate-400 w-36 shrink-0">{b.name}</p>
-            <div className="flex-1 h-1.5 rounded-full bg-white/5">
-              <div className="h-full rounded-full bg-emerald-500 transition-all duration-700" style={{ width: `${b.score}%` }} />
+          <div key={b.name} className="flex items-center gap-4">
+            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide w-36 shrink-0">{b.name}</p>
+            <div className="flex-1 h-2 rounded-full bg-black/40 overflow-hidden border border-white/5">
+              <div 
+                className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-1000" 
+                style={{ width: `${b.score}%` }} 
+              />
             </div>
-            <p className="text-xs font-semibold text-slate-300 w-8 text-right">{b.score}</p>
+            <p className="text-[11px] font-black w-8 text-right text-slate-200">{b.score}</p>
           </div>
         ))}
       </div>
@@ -93,89 +172,40 @@ const HealthScore = ({ healthScore }) => (
   </div>
 );
 
-// ── Forecast Chart ────────────────────────────────────────────────────────────
-const ForecastChart = ({ forecastData }) => (
-  <div className="glass border border-white/7 rounded-2xl p-5">
-    <div className="flex items-center gap-2 mb-4">
-      <Zap size={16} className="text-amber-400" />
-      <h3 className="text-sm font-semibold text-slate-200">Revenue Forecast (ARIMA / Linear Regression)</h3>
-    </div>
-    <ResponsiveContainer width="100%" height={200}>
-      <AreaChart data={forecastData} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
-        <defs>
-          <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.2} />
-            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="gFcast" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="#F59E0B" stopOpacity={0.2} />
-            <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-        <XAxis dataKey="month" tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
-        <YAxis tickFormatter={(v) => `$${v / 1000}k`} tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} width={54} />
-        <Tooltip
-          formatter={(v) => [fmt(v)]}
-          contentStyle={{ background: '#0D1526', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 12 }}
-          labelStyle={{ color: '#94A3B8' }}
-          itemStyle={{ color: '#F1F5F9' }}
-        />
-        <Area type="monotone" dataKey="revenue"  stroke="#3B82F6" strokeWidth={2} fill="url(#gRev)"   dot={false} />
-        <Area type="monotone" dataKey="forecast" stroke="#F59E0B" strokeWidth={2} fill="url(#gFcast)" dot={{ r: 4, fill: '#F59E0B' }} strokeDasharray="6 3" />
-      </AreaChart>
-    </ResponsiveContainer>
-    <p className="text-xs text-slate-500 mt-2 text-center">
-      Blue = historical · Amber dashed = AI-forecasted next 3 periods
-    </p>
-  </div>
-);
-
-// ── Risk Banner ───────────────────────────────────────────────────────────────
-const RiskBanner = ({ risk }) => {
-  if (!risk) return null;
-  const lvlColor = {
-    LOW: 'border-emerald-500/25 bg-emerald-500/8 text-emerald-400',
-    MEDIUM: 'border-amber-500/25 bg-amber-500/8 text-amber-400',
-    HIGH: 'border-red-500/25 bg-red-500/8 text-red-400',
-    CRITICAL: 'border-red-700/40 bg-red-700/12 text-red-300',
-  }[risk.risk_level] ?? 'border-white/10 bg-white/5 text-slate-400';
-  return (
-    <div className={`glass border rounded-xl p-4 flex items-start gap-3 ${lvlColor}`}>
-      <ShieldAlert size={18} className="shrink-0 mt-0.5" />
-      <div>
-        <p className="text-sm font-semibold">Risk Level: {risk.risk_level}</p>
-        {risk.risk_flags?.length > 0 && (
-          <ul className="mt-1 list-disc list-inside text-xs opacity-80 space-y-0.5">
-            {risk.risk_flags.map((f, i) => <li key={i}>{f}</li>)}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-};
-
 // ── Scenario Analysis ─────────────────────────────────────────────────────────
 const ScenarioAnalysis = ({ scenarioData }) => (
-  <div className="glass border border-white/7 rounded-2xl p-5">
-    <div className="flex items-center gap-2 mb-4">
-      <Target size={16} className="text-purple-400" />
-      <h3 className="text-sm font-semibold text-slate-200">What-If Scenario Analysis</h3>
+  <div
+    className="rounded-2xl p-5"
+    style={{
+      background: 'rgba(13,21,38,0.65)',
+      backdropFilter: 'blur(16px)',
+      border: '1px solid rgba(139,92,246,0.15)',
+      boxShadow: '0 4px 24px rgba(139,92,246,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
+    }}
+  >
+    <div className="flex items-center gap-3 mb-6 px-1">
+      <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">
+        <Target size={15} className="text-purple-400" />
+      </div>
+      <div>
+        <h3 className="text-sm font-bold text-slate-100">Scenario Analysis</h3>
+        <p className="text-[11px] text-slate-500">What-if projections for net profit</p>
+      </div>
     </div>
-    <ResponsiveContainer width="100%" height={180}>
-      <BarChart data={scenarioData} margin={{ top: 4, right: 10, left: 0, bottom: 0 }} layout="vertical">
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+    
+    <ResponsiveContainer width="100%" height={220}>
+      <BarChart data={scenarioData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }} layout="vertical">
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" horizontal={false} />
         <XAxis type="number" tickFormatter={(v) => `$${(v / 1000000).toFixed(1)}M`} tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
-        <YAxis type="category" dataKey="scenario" tick={{ fill: '#94A3B8', fontSize: 10 }} axisLine={false} tickLine={false} width={115} />
-        <Tooltip
-          formatter={(v) => [fmt(v), 'Net Profit']}
-          contentStyle={{ background: '#0D1526', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 12 }}
-          labelStyle={{ color: '#94A3B8' }}
-          itemStyle={{ color: '#F1F5F9' }}
-        />
-        <Bar dataKey="profit" radius={[0, 6, 6, 0]}>
+        <YAxis type="category" dataKey="scenario" tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} width={120} />
+        <Tooltip content={<CustomTip formatter={(v) => fmt(v)} nameFormatter={() => 'Net Profit'} />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+        <Bar dataKey="profit" radius={[0, 4, 4, 0]} barSize={24}>
           {scenarioData.map((d, i) => (
-            <Cell key={i} fill={d.profit >= (scenarioData[0]?.profit ?? 0) ? '#10B981' : '#F43F5E'} opacity={0.85} />
+            <Cell 
+              key={i} 
+              fill={d.profit >= (scenarioData[0]?.profit ?? 0) ? '#10B981' : '#F43F5E'} 
+              opacity={0.9} 
+            />
           ))}
         </Bar>
       </BarChart>
@@ -191,64 +221,110 @@ const Forecast = () => {
   } = useAnalysis();
 
   return (
-    <div className="flex flex-col gap-6 page-enter">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-8 pb-10 page-enter">
+      {/* ── HEADER ────────────────────────────────────────────────────── */}
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-100">Forecast Engine & AI Advisor</h2>
-          <p className="text-slate-400 text-sm mt-0.5">Anomaly detection, smart recommendations, health score, and scenario planning.</p>
+          <h2 className="text-3xl font-bold text-slate-100 tracking-tight">Forecast Engine</h2>
+          <p className="text-slate-400 text-sm mt-1">Anomaly detection, forward projections, and AI guidance</p>
         </div>
         {isReal && (
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
-            <Database size={11} /> Live data
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold tracking-wide uppercase shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Live Sync
           </span>
         )}
-      </div>
+      </section>
 
-      {/* Risk Banner (only when real data) */}
-      {isReal && risk && <RiskBanner risk={risk} />}
+      {/* ── RISK & AUDITOR ────────────────────────────────────────────── */}
+      {isReal && (risk || auditorExplanation) && (
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {risk && (
+            <div 
+              className="rounded-2xl p-5 flex flex-col gap-3"
+              style={{
+                background: 'rgba(244,63,94,0.05)',
+                border: '1px solid rgba(244,63,94,0.2)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <ShieldAlert size={18} className="text-red-400" />
+                <h3 className="text-sm font-bold text-red-300 uppercase tracking-widest">Risk Level: {risk.risk_level}</h3>
+              </div>
+              {risk.risk_flags?.length > 0 && (
+                <ul className="space-y-1.5 mt-2">
+                  {risk.risk_flags.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-red-200/90">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-2" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
-      {/* Auditor explanation (only when real data) */}
-      {isReal && auditorExplanation && (
-        <div className="glass border border-blue-500/10 rounded-xl p-4">
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-1">AI Auditor Summary</p>
-          <p className="text-sm text-slate-300 leading-relaxed">{auditorExplanation}</p>
-        </div>
+          {auditorExplanation && (
+            <div 
+              className="rounded-2xl p-5 flex flex-col gap-3 relative overflow-hidden"
+              style={{
+                background: 'rgba(59,130,246,0.05)',
+                border: '1px solid rgba(59,130,246,0.2)',
+              }}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl" />
+              <div className="flex items-center gap-3 relative z-10">
+                <BrainCircuit size={18} className="text-blue-400" />
+                <h3 className="text-sm font-bold text-blue-300 uppercase tracking-widest">AI Auditor Briefing</h3>
+              </div>
+              <p className="text-sm text-blue-100/90 leading-relaxed relative z-10">{auditorExplanation}</p>
+            </div>
+          )}
+        </section>
       )}
 
-      {/* Forecast + Health Score */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ForecastChart forecastData={forecastData} />
-        <HealthScore healthScore={healthScore} />
-      </div>
+      {/* ── HEALTH & SCENARIO ─────────────────────────────────────────── */}
+      <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <HealthScoreDetail healthScore={healthScore} />
+        <ScenarioAnalysis scenarioData={scenarioData} />
+      </section>
 
-      {/* Anomaly Alerts */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle size={16} className="text-red-400" />
-          <h3 className="text-sm font-semibold text-slate-200">AI-Detected Anomalies</h3>
-          <span className="text-[10px] bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full font-bold">
-            {anomalyAlerts.length} alerts
+      {/* ── ANOMALIES ─────────────────────────────────────────────────── */}
+      <section>
+        <div className="flex items-center gap-3 mb-5 px-1">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+            <Zap size={15} className="text-amber-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-100">AI-Detected Anomalies</h3>
+            <p className="text-[11px] text-slate-500">Statistically significant deviations from baseline</p>
+          </div>
+          <span className="ml-auto text-[10px] bg-amber-500/15 text-amber-500 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold">
+            {anomalyAlerts.length} ALERTS
           </span>
         </div>
-        <div className="flex flex-col gap-3 stagger">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {anomalyAlerts.map((a) => <AlertCard key={a.id} a={a} />)}
         </div>
-      </div>
+      </section>
 
-      {/* Recommendations */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <BrainCircuit size={16} className="text-purple-400" />
-          <h3 className="text-sm font-semibold text-slate-200">Decision Engine — Smart Recommendations</h3>
+      {/* ── RECOMMENDATIONS ────────────────────────────────────────────── */}
+      <section>
+        <div className="flex items-center gap-3 mb-5 px-1">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+            <Target size={15} className="text-emerald-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-100">Strategic Action Plan</h3>
+            <p className="text-[11px] text-slate-500">Curated steps based on projection engine</p>
+          </div>
         </div>
-        <div className="flex flex-col gap-3 stagger">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 stagger">
           {recommendations.map((r, i) => <RecCard key={r.id} r={r} i={i} />)}
         </div>
-      </div>
-
-      {/* Scenario */}
-      <ScenarioAnalysis scenarioData={scenarioData} />
+      </section>
+      
     </div>
   );
 };

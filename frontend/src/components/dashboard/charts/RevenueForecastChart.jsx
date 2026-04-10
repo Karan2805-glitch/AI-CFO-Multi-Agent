@@ -1,0 +1,176 @@
+import React from 'react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, ReferenceLine, Legend,
+} from 'recharts';
+import { TrendingUp } from 'lucide-react';
+
+const fmt = (v) => {
+  if (typeof v !== 'number') return 'N/A';
+  if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
+  if (Math.abs(v) >= 1_000)     return `$${(v / 1_000).toFixed(1)}k`;
+  return `$${v}`;
+};
+
+const buildData = (revenueTrend, forecast) => {
+  const hist = Array.isArray(revenueTrend) ? revenueTrend : [];
+  const fore = Array.isArray(forecast)     ? forecast      : [];
+  const data = [];
+  hist.forEach((v) => {
+    const revenueVal = typeof v === 'object' && v !== null ? v.revenue : v;
+    const periodVal = typeof v === 'object' && v !== null && v.month ? v.month : `M${data.length + 1}`;
+    data.push({ period: periodVal, revenue: revenueVal, forecast: null });
+  });
+  fore.forEach((v) => {
+    const forecastVal = typeof v === 'object' && v !== null ? v.revenue || v.forecast : v;
+    const periodVal = typeof v === 'object' && v !== null && v.month ? v.month : `F${data.length + 1}`;
+    data.push({ period: periodVal, revenue: null, forecast: forecastVal });
+  });
+  return data;
+};
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      className="rounded-xl px-4 py-3 text-xs"
+      style={{
+        background: 'rgba(7,11,20,0.96)',
+        border: '1px solid rgba(255,255,255,0.10)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      }}
+    >
+      <p className="text-slate-400 mb-2 font-semibold tracking-wider uppercase text-[10px]">{label}</p>
+      {payload.map((p) => (
+        p.value != null && (
+          <div key={p.dataKey} className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />
+            <span className="text-slate-300">{p.name}:</span>
+            <span className="font-bold" style={{ color: p.color }}>{fmt(p.value)}</span>
+          </div>
+        )
+      ))}
+    </div>
+  );
+};
+
+export default function RevenueForecastChart({ revenueTrend, forecast }) {
+  const data = buildData(revenueTrend, forecast);
+  const splitIdx = Array.isArray(revenueTrend) ? revenueTrend.length : 0;
+  const splitPeriod = splitIdx > 0 ? `M${splitIdx}` : null;
+
+  const empty = data.length === 0;
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: 'rgba(13,21,38,0.65)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid rgba(59,130,246,0.15)',
+        boxShadow: '0 4px 24px rgba(59,130,246,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-5 py-4 border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.28)' }}
+          >
+            <TrendingUp size={15} className="text-blue-400" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-100">Revenue Trend &amp; Forecast</p>
+            <p className="text-[11px] text-slate-500">Historical performance + AI projection</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 text-[11px]">
+          <span className="flex items-center gap-1.5 text-blue-400">
+            <span className="w-3 h-0.5 rounded-full bg-blue-400" />
+            Historical
+          </span>
+          <span className="flex items-center gap-1.5 text-amber-400">
+            <span className="w-3 h-0.5 rounded-full bg-amber-400 border-dashed" style={{ borderTop: '2px dashed #F59E0B', background: 'none' }} />
+            Forecast
+          </span>
+        </div>
+      </div>
+
+      {/* Chart area */}
+      <div className="p-5">
+        {empty ? (
+          <div className="h-60 flex flex-col items-center justify-center gap-2 text-slate-500">
+            <TrendingUp size={28} className="text-slate-700" />
+            <p className="text-sm">No revenue data available.</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
+              <defs>
+                <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="fcastGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#F59E0B" stopOpacity={0.20} />
+                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis
+                dataKey="period"
+                tick={{ fill: '#64748B', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tickFormatter={fmt}
+                tick={{ fill: '#64748B', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                width={60}
+              />
+              <Tooltip content={<CustomTooltip />} />
+
+              {splitPeriod && (
+                <ReferenceLine
+                  x={splitPeriod}
+                  stroke="rgba(255,255,255,0.12)"
+                  strokeDasharray="4 4"
+                  label={{ value: 'Forecast →', position: 'insideTopRight', fill: '#64748B', fontSize: 10 }}
+                />
+              )}
+
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                name="Revenue"
+                stroke="#3B82F6"
+                strokeWidth={2.5}
+                fill="url(#revGrad)"
+                dot={false}
+                connectNulls
+              />
+              <Area
+                type="monotone"
+                dataKey="forecast"
+                name="Forecast"
+                stroke="#F59E0B"
+                strokeWidth={2.5}
+                strokeDasharray="6 4"
+                fill="url(#fcastGrad)"
+                dot={{ r: 4, fill: '#F59E0B', strokeWidth: 0 }}
+                connectNulls
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+    </div>
+  );
+}
