@@ -1,6 +1,7 @@
 import pandas as pd
 
 def preprocess(df: pd.DataFrame):
+    df = df.copy()
 
     # ---- 1. Normalize column names ----
     df.columns = [col.strip().lower() for col in df.columns]
@@ -9,12 +10,13 @@ def preprocess(df: pd.DataFrame):
     df = df.loc[:, ~df.columns.str.contains("^unnamed")]
     df = df.dropna(axis=1, how="all")
 
-    # ---- 3. Normalize 'months' column ----
+    # ---- 3. Normalize time column ----
+    if "months" not in df.columns and "date" in df.columns:
+        df = df.rename(columns={"date": "months"})
+
     if "months" in df.columns:
         df["months"] = pd.to_datetime(df["months"], errors="coerce")
-
-    # Drop invalid dates
-    df = df.dropna(subset=["months"])
+        df = df.dropna(subset=["months"])
 
     # ---- 4. Fill missing values ----
     df = df.fillna(0)
@@ -40,10 +42,6 @@ def preprocess(df: pd.DataFrame):
             df = df.interpolate(method="time")
         
         df = df.fillna(0).reset_index().rename(columns={"index": "months"})
-
-    # ---- 7. Debug logs (TEMPORARY) ----
-    print("Processed Columns:", df.columns.tolist())
-    print(df.head())
 
     return df
 # df = preprocess("sample.csv")

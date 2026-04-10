@@ -3,7 +3,13 @@
 # In production, Prophet or auto_arima can be used for dynamic parameter selection.
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
+
+try:
+    from sklearn.linear_model import LinearRegression
+    SKLEARN_AVAILABLE = True
+except Exception:
+    LinearRegression = None
+    SKLEARN_AVAILABLE = False
 
 # Optional Prophet import
 try:
@@ -60,16 +66,24 @@ def forecast_revenue_ml(df, periods=3):
     X = np.arange(len(revenues)).reshape(-1, 1)
     y = revenues
 
-    model = LinearRegression()
-    model.fit(X, y)
-
     forecasts = []
     last_index = len(revenues)
 
-    for i in range(1, periods + 1):
-        future_x = np.array([[last_index + i - 1]])
-        pred = model.predict(future_x)[0]
-        forecasts.append(round(float(pred), 2))
+    if SKLEARN_AVAILABLE:
+        model = LinearRegression()
+        model.fit(X, y)
+
+        for i in range(1, periods + 1):
+            future_x = np.array([[last_index + i - 1]])
+            pred = model.predict(future_x)[0]
+            forecasts.append(round(float(pred), 2))
+    else:
+        slope, intercept = np.polyfit(np.arange(len(revenues)), y, 1)
+
+        for i in range(1, periods + 1):
+            future_index = last_index + i - 1
+            pred = slope * future_index + intercept
+            forecasts.append(round(float(pred), 2))
 
     return forecasts
 

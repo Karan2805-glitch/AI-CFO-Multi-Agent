@@ -1,10 +1,9 @@
-import numpy as np
-
 # Try importing ML model
 try:
     from sklearn.ensemble import IsolationForest
     ML_AVAILABLE = True
 except Exception:
+    IsolationForest = None
     ML_AVAILABLE = False
 
 
@@ -12,10 +11,23 @@ except Exception:
 # 🔹 ML-Based Anomaly Detection (Isolation Forest)
 # -------------------------------
 def detect_anomalies_ml(df):
+    if not ML_AVAILABLE or "revenue" not in df.columns:
+        return None
+
     try:
-        # Use key financial features
-        expense_cols = df.columns.drop(["date", "revenue"], errors="ignore")
-        features = df[["revenue"] + list(expense_cols)]
+        excluded_cols = {"months", "date"}
+        feature_cols = [
+            col for col in df.columns
+            if col not in excluded_cols and df[col].dtype.kind in "biufc"
+        ]
+
+        if "revenue" not in feature_cols:
+            feature_cols.insert(0, "revenue")
+
+        if len(feature_cols) < 1 or len(df) < 2:
+            return []
+
+        features = df[feature_cols]
         model = IsolationForest(contamination=0.2, random_state=42)
         preds = model.fit_predict(features)
 
@@ -27,7 +39,7 @@ def detect_anomalies_ml(df):
         return anomalies
 
     except Exception:
-        return []
+        return None
 
 
 # -------------------------------
@@ -37,7 +49,7 @@ def detect_anomalies_rule(df):
     anomalies = []
 
     # Revenue drop detection
-    if len(df) > 1:
+    if "revenue" in df.columns and len(df) > 1:
         prev = df["revenue"].iloc[-2]
         curr = df["revenue"].iloc[-1]
 
@@ -55,13 +67,9 @@ def detect_anomalies(df):
     Try ML model → fallback to rule-based detection
     """
 
-    anomalies = []
+    anomalies = detect_anomalies_ml(df)
 
-    if ML_AVAILABLE:
-        anomalies = detect_anomalies_ml(df)
+    if anomalies is not None:
+        return anomalies
 
-    # fallback if ML fails or no anomalies found
-    if not anomalies:
-        anomalies = detect_anomalies_rule(df)
-
-    return anomalies
+    return detect_anomalies_rule(df)

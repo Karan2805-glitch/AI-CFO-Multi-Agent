@@ -43,8 +43,11 @@ def get_result(run_id: str, db: Session = Depends(get_db)):
         # 🔹 Insights
         "insights": {
             "recommendations": result.get("recommendations", {}).get("recommendations", []),
-            "summary": result.get("auditor", {}).get("summary")
-        }
+            "summary": result.get("auditor", {}).get("summary"),
+            "anomalies": result.get("anomalies", [])
+        },
+
+        "anomalies": result.get("anomalies", [])
     }
 
 

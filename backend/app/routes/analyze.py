@@ -16,6 +16,7 @@ def compress_result(result: dict):
         "risk": result.get("risk"),
         "health_score": result.get("health_score"),
         "forecast": result.get("forecast"),
+        "anomalies": result.get("anomalies", []),
 
         "recommendations": {
             "recommendations": result.get("recommendations", {}).get("recommendations", [])
