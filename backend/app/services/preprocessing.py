@@ -11,7 +11,10 @@ def preprocess(df: pd.DataFrame):
 
     # ---- 3. Normalize 'months' column ----
     if "months" in df.columns:
-        df["months"] = df["months"].astype(str).str.strip()
+        df["months"] = pd.to_datetime(df["months"], errors="coerce")
+
+    # Drop invalid dates
+    df = df.dropna(subset=["months"])
 
     # ---- 4. Fill missing values ----
     df = df.fillna(0)
