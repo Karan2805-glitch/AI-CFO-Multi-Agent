@@ -22,9 +22,7 @@ def compress_result(result: dict):
             "recommendations": result.get("recommendations", {}).get("recommendations", [])
         },
 
-        "auditor": {
-            "summary": result.get("auditor", {}).get("summary")
-        }
+        "auditor": result.get("auditor", {})
     }
 
 
@@ -49,10 +47,16 @@ async def analyze_csv(
         contents = await file.read()
         df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
-        result = analyze(df)
+        result = await analyze(df)
         compressed = compress_result(result)
 
-        health_score = compressed.get("health_score", 0)
+        # Extract integer health score from the health payload dict.
+        # The DB column is Integer, so we must not store the raw dict.
+        raw_health = compressed.get("health_score", {})
+        if isinstance(raw_health, dict):
+            health_score = int(raw_health.get("overall_score", raw_health.get("score", 0)))
+        else:
+            health_score = int(raw_health) if raw_health else 0
         risk_level = compressed.get("risk", {}).get("risk_level", "UNKNOWN")
 
         run = AnalysisRun(
