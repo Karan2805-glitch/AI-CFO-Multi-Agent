@@ -12,20 +12,6 @@ from app.services.analysis_service import analyze
 router = APIRouter()
 
 
-def compress_result(result: dict):
-    return {
-        "kpi": result.get("kpi"),
-        "risk": result.get("risk"),
-        "health_score": result.get("health_score"),
-        "forecast": result.get("forecast"),
-        "anomalies": result.get("anomalies", []),
-        "recommendations": {
-            "recommendations": result.get("recommendations", {}).get("recommendations", [])
-        },
-        "auditor": result.get("auditor", {})
-    }
-
-
 @router.post("")
 async def analyze_csv(
     session_id: str = Query(...),
@@ -49,21 +35,20 @@ async def analyze_csv(
         df = await run_in_threadpool(lambda: pd.read_csv(io.StringIO(contents.decode("utf-8"))))
 
         result = await analyze(df)
-        compressed = compress_result(result)
 
-        raw_health = compressed.get("health_score", {})
+        raw_health = result.get("health_score", {})
         if isinstance(raw_health, dict):
             health_score = int(raw_health.get("overall_score", raw_health.get("score", 0)))
         else:
             health_score = int(raw_health) if raw_health else 0
-        risk_level = compressed.get("risk", {}).get("risk_level", "UNKNOWN")
+        risk_level = result.get("risk", {}).get("risk_level", "UNKNOWN")
 
         run = AnalysisRun(
             session_id=session_id,
             row_count=len(df),
             health_score=health_score,
             risk_level=risk_level,
-            result=compressed
+            result=result
         )
 
         # DB write off the event loop.
@@ -81,8 +66,8 @@ async def analyze_csv(
             "summary": {
                 "health_score": health_score,
                 "risk_level": risk_level,
-                "total_revenue": compressed.get("kpi", {}).get("total_revenue"),
-                "profit": compressed.get("kpi", {}).get("profit")
+                "total_revenue": result.get("kpi", {}).get("total_revenue"),
+                "profit": result.get("kpi", {}).get("profit")
             }
         }
 
