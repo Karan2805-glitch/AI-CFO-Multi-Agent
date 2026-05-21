@@ -10,7 +10,7 @@ This document explains how to set up, run, and test the AI-CFO-Multi-Agent proje
 - On Windows: PowerShell or WSL recommended for developer convenience
 
 **Repository layout (relevant folders)**
-- `backend/` — Flask backend, database init, tests
+- `backend/` — FastAPI backend, database init, tests
 - `frontend/` — React + Vite frontend
 - `docker-compose.yml` — full stack with services (optional)
 
@@ -57,10 +57,8 @@ python backend/init_db.py
 ```bash
 # from repo root
 cd backend
-# If using FLASK_APP/FLASK_ENV variables in .env, ensure they are loaded
-flask run --host 0.0.0.0 --port 8000
-# or run the app directly
-python -m app.main
+# Run the FastAPI app with Uvicorn
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 5. Run backend tests:
@@ -87,7 +85,7 @@ npm install
 
 ```bash
 npm run dev
-# open the URL printed by Vite (usually http://localhost:5173)
+# open the URL printed by Vite (usually http://localhost:5173 / http://localhost:5174)
 ```
 
 3. Build for production:
@@ -96,23 +94,7 @@ npm run dev
 npm run build
 ```
 
-4. Optional: new frontend library (`ai-cfo-lib`)
-
-If the project uses a new frontend library, you can either install it from npm or add it as a local library under `frontend/src/lib/ai-cfo`.
-
-Install from npm:
-
-```bash
-cd frontend
-npm install ai-cfo-lib
-```
-
-Or create a local stub (useful during development):
-
-```bash
-mkdir -p frontend/src/lib/ai-cfo
-echo "export * from './index'" > frontend/src/lib/ai-cfo/index.js
-```
+4. Optional: local frontend library (`ai-cfo-lib`)
 
 If you use the local library, the project includes path/alias mappings in `frontend/jsconfig.json` and `frontend/components.json` that map `ai-cfo-lib/*` and `ai-cfo` to `src/lib/ai-cfo`.
 
@@ -136,16 +118,14 @@ docker compose down
 
 ## Environment variables (quick reference)
 See `.env.example` for full list. Typical keys:
-- `FLASK_ENV`, `FLASK_APP`
 - `SECRET_KEY` / `JWT_SECRET`
-- `DATABASE_URL` or `SQLALCHEMY_DATABASE_URI`
-- `POSTGRES_*` (if using Postgres)
+- `DATABASE_URL` or `POSTGRES_DB` (if using Postgres or another SQL DB)
 - `OPENAI_API_KEY` (or other LLM provider keys)
 - `VITE_API_BASE_URL` (frontend -> backend base URL)
 
 
 ## Troubleshooting
-- If port already in use, change `BACKEND_PORT` or frontend port.
+- If port already in use, change `BACKEND_PORT` or frontend port in Vite config.
 - On Windows, use PowerShell or WSL to run the `cp`/`source` commands.
 - If dependencies fail, check Python version and re-create venv.
 
@@ -160,7 +140,7 @@ python -m venv backend/.venv
 backend\.venv\Scripts\Activate.ps1  # PowerShell on Windows
 pip install -r backend/requirements.txt
 python backend/init_db.py
-cd backend && flask run
+cd backend && uvicorn app.main:app --reload
 # frontend
 cd frontend && npm install && npm run dev
 # docker
