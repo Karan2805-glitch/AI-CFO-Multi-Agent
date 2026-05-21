@@ -12,7 +12,7 @@ from app.services.analysis_service import analyze
 router = APIRouter()
 
 
-@router.post("")
+@router.post("/analyze")
 async def analyze_csv(
     session_id: str = Query(...),
     file: UploadFile = File(...),
