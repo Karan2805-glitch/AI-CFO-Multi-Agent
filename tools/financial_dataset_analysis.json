@@ -1,0 +1,886 @@
+{
+  "root": "D:\\Financial_Projects",
+  "datasets": [
+    {
+      "dataset": "checking_account_main.csv",
+      "rows": 877,
+      "columns": [
+        "amount",
+        "balance",
+        "category",
+        "description",
+        "months",
+        "transaction_id",
+        "type"
+      ],
+      "schema_similarity": 20.0,
+      "revenue_start": 0.0,
+      "revenue_end": 0.0,
+      "revenue_growth_pct": 0.0,
+      "profit_margin_pct": 0.0,
+      "expense_ratio_pct": 0.0,
+      "archetype_scores": {
+        "growing": 5.0,
+        "in_loss": 5.0,
+        "profit_making": 5.0
+      },
+      "best_fit": "Growing",
+      "confidence_gap": 0.0,
+      "forecast": [
+        {
+          "months": "2024-01-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-02-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-03-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-04-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-05-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-06-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        }
+      ]
+    },
+    {
+      "dataset": "checking_account_secondary.csv",
+      "rows": 48,
+      "columns": [
+        "amount",
+        "balance",
+        "category",
+        "description",
+        "months",
+        "transaction_id",
+        "type"
+      ],
+      "schema_similarity": 20.0,
+      "revenue_start": 0.0,
+      "revenue_end": 0.0,
+      "revenue_growth_pct": 0.0,
+      "profit_margin_pct": 0.0,
+      "expense_ratio_pct": 0.0,
+      "archetype_scores": {
+        "growing": 5.0,
+        "in_loss": 5.0,
+        "profit_making": 5.0
+      },
+      "best_fit": "Growing",
+      "confidence_gap": 0.0,
+      "forecast": [
+        {
+          "months": "2024-01-15",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-02-15",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-03-15",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-04-15",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-05-15",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-06-15",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        }
+      ]
+    },
+    {
+      "dataset": "credit_card_account.csv",
+      "rows": 133,
+      "columns": [
+        "amount",
+        "balance",
+        "category",
+        "months",
+        "transaction_id",
+        "type",
+        "vendor"
+      ],
+      "schema_similarity": 20.0,
+      "revenue_start": 0.0,
+      "revenue_end": 0.0,
+      "revenue_growth_pct": 0.0,
+      "profit_margin_pct": 0.0,
+      "expense_ratio_pct": 0.0,
+      "archetype_scores": {
+        "growing": 5.0,
+        "in_loss": 5.0,
+        "profit_making": 5.0
+      },
+      "best_fit": "Growing",
+      "confidence_gap": 0.0,
+      "forecast": [
+        {
+          "months": "2024-01-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-02-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-03-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-04-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-05-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "2024-06-28",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        }
+      ]
+    },
+    {
+      "dataset": "gusto_payroll.csv",
+      "rows": 92,
+      "columns": [
+        "account",
+        "amount",
+        "employee_id",
+        "employee_name",
+        "months",
+        "pay_date",
+        "role",
+        "type"
+      ],
+      "schema_similarity": 20.0,
+      "revenue_start": 0.0,
+      "revenue_end": 0.0,
+      "revenue_growth_pct": 0.0,
+      "profit_margin_pct": 0.0,
+      "expense_ratio_pct": 0.0,
+      "archetype_scores": {
+        "growing": 5.0,
+        "in_loss": 5.0,
+        "profit_making": 5.0
+      },
+      "best_fit": "Growing",
+      "confidence_gap": 0.0,
+      "forecast": [
+        {
+          "months": "P1",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P2",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P3",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P4",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P5",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P6",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        }
+      ]
+    },
+    {
+      "dataset": "gusto_payroll_bc.csv",
+      "rows": 266,
+      "columns": [
+        "cpp",
+        "ei",
+        "employee_id",
+        "employee_name",
+        "employer_cpp",
+        "employer_ei",
+        "federal_tax",
+        "gross_pay",
+        "months",
+        "net_pay",
+        "other_deductions",
+        "pay_date",
+        "provincial_tax",
+        "role",
+        "tips",
+        "travel_reimbursement"
+      ],
+      "schema_similarity": 20.0,
+      "revenue_start": 0.0,
+      "revenue_end": 0.0,
+      "revenue_growth_pct": 0.0,
+      "profit_margin_pct": 0.0,
+      "expense_ratio_pct": 0.0,
+      "archetype_scores": {
+        "growing": 5.0,
+        "in_loss": 5.0,
+        "profit_making": 5.0
+      },
+      "best_fit": "Growing",
+      "confidence_gap": 0.0,
+      "forecast": [
+        {
+          "months": "P1",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P2",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P3",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P4",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P5",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        },
+        {
+          "months": "P6",
+          "revenue": 0.0,
+          "expenses": 0.0,
+          "net_profit": 0.0
+        }
+      ]
+    },
+    {
+      "dataset": "High_Profit_SME_Monthly.csv",
+      "rows": 612,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 1.81,
+      "revenue_end": 101926.27,
+      "revenue_growth_pct": 5637414.71,
+      "profit_margin_pct": -37988.0,
+      "expense_ratio_pct": 38088.0,
+      "archetype_scores": {
+        "growing": 63.46,
+        "in_loss": 52.09,
+        "profit_making": 47.14
+      },
+      "best_fit": "Growing",
+      "confidence_gap": 11.37,
+      "forecast": [
+        {
+          "months": "2027-01-01",
+          "revenue": 9040.57,
+          "expenses": 4266278.33,
+          "net_profit": -4257237.76
+        },
+        {
+          "months": "2027-02-01",
+          "revenue": 9162.22,
+          "expenses": 4275849.78,
+          "net_profit": -4266687.55
+        },
+        {
+          "months": "2027-03-01",
+          "revenue": 9285.51,
+          "expenses": 4285421.22,
+          "net_profit": -4276135.72
+        },
+        {
+          "months": "2027-04-01",
+          "revenue": 9410.45,
+          "expenses": 4294992.67,
+          "net_profit": -4285582.22
+        },
+        {
+          "months": "2027-05-01",
+          "revenue": 9537.07,
+          "expenses": 4304564.12,
+          "net_profit": -4295027.04
+        },
+        {
+          "months": "2027-06-01",
+          "revenue": 9665.4,
+          "expenses": 4314135.56,
+          "net_profit": -4304470.16
+        }
+      ]
+    },
+    {
+      "dataset": "High_Risk_full_dataset.csv",
+      "rows": 612,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 11541.0,
+      "revenue_end": 0.26,
+      "revenue_growth_pct": -100.0,
+      "profit_margin_pct": -13746.02,
+      "expense_ratio_pct": 13846.02,
+      "archetype_scores": {
+        "growing": 21.93,
+        "in_loss": 85.89,
+        "profit_making": 24.23
+      },
+      "best_fit": "In Loss",
+      "confidence_gap": 61.66,
+      "forecast": [
+        {
+          "months": "2027-01-01",
+          "revenue": -2616.07,
+          "expenses": 702248.99,
+          "net_profit": -704865.06
+        },
+        {
+          "months": "2027-02-01",
+          "revenue": -2631.13,
+          "expenses": 703636.96,
+          "net_profit": -706268.1
+        },
+        {
+          "months": "2027-03-01",
+          "revenue": -2646.19,
+          "expenses": 705024.94,
+          "net_profit": -707671.13
+        },
+        {
+          "months": "2027-04-01",
+          "revenue": -2661.25,
+          "expenses": 706412.92,
+          "net_profit": -709074.16
+        },
+        {
+          "months": "2027-05-01",
+          "revenue": -2676.31,
+          "expenses": 707800.89,
+          "net_profit": -710477.2
+        },
+        {
+          "months": "2027-06-01",
+          "revenue": -2691.37,
+          "expenses": 709188.87,
+          "net_profit": -711880.23
+        }
+      ]
+    },
+    {
+      "dataset": "Low_Risk_full_dataset.csv",
+      "rows": 612,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 11541.0,
+      "revenue_end": 613.48,
+      "revenue_growth_pct": -94.68,
+      "profit_margin_pct": -5.45,
+      "expense_ratio_pct": 105.45,
+      "archetype_scores": {
+        "growing": 24.73,
+        "in_loss": 54.85,
+        "profit_making": 42.63
+      },
+      "best_fit": "In Loss",
+      "confidence_gap": 12.22,
+      "forecast": [
+        {
+          "months": "2027-01-01",
+          "revenue": -1176.7,
+          "expenses": 3425.54,
+          "net_profit": -4602.24
+        },
+        {
+          "months": "2027-02-01",
+          "revenue": -1191.13,
+          "expenses": 3425.54,
+          "net_profit": -4616.68
+        },
+        {
+          "months": "2027-03-01",
+          "revenue": -1205.57,
+          "expenses": 3425.54,
+          "net_profit": -4631.11
+        },
+        {
+          "months": "2027-04-01",
+          "revenue": -1220.01,
+          "expenses": 3425.54,
+          "net_profit": -4645.55
+        },
+        {
+          "months": "2027-05-01",
+          "revenue": -1234.45,
+          "expenses": 3425.54,
+          "net_profit": -4659.99
+        },
+        {
+          "months": "2027-06-01",
+          "revenue": -1248.88,
+          "expenses": 3425.54,
+          "net_profit": -4674.43
+        }
+      ]
+    },
+    {
+      "dataset": "Medium_Risk_full_dataset.csv",
+      "rows": 612,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 11541.0,
+      "revenue_end": 45.8,
+      "revenue_growth_pct": -99.6,
+      "profit_margin_pct": -242.52,
+      "expense_ratio_pct": 342.52,
+      "archetype_scores": {
+        "growing": 26.74,
+        "in_loss": 84.12,
+        "profit_making": 32.43
+      },
+      "best_fit": "In Loss",
+      "confidence_gap": 51.69,
+      "forecast": [
+        {
+          "months": "2027-01-01",
+          "revenue": -2379.01,
+          "expenses": 10791.71,
+          "net_profit": -13170.72
+        },
+        {
+          "months": "2027-02-01",
+          "revenue": -2393.92,
+          "expenses": 10802.46,
+          "net_profit": -13196.37
+        },
+        {
+          "months": "2027-03-01",
+          "revenue": -2408.82,
+          "expenses": 10813.21,
+          "net_profit": -13222.02
+        },
+        {
+          "months": "2027-04-01",
+          "revenue": -2423.72,
+          "expenses": 10823.95,
+          "net_profit": -13247.68
+        },
+        {
+          "months": "2027-05-01",
+          "revenue": -2438.62,
+          "expenses": 10834.7,
+          "net_profit": -13273.33
+        },
+        {
+          "months": "2027-06-01",
+          "revenue": -2453.53,
+          "expenses": 10845.45,
+          "net_profit": -13298.98
+        }
+      ]
+    },
+    {
+      "dataset": "Moderate_Profit_SME_Monthly.csv",
+      "rows": 612,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 1.81,
+      "revenue_end": 8570.05,
+      "revenue_growth_pct": 473907.19,
+      "profit_margin_pct": -2559051.44,
+      "expense_ratio_pct": 2559151.44,
+      "archetype_scores": {
+        "growing": 63.34,
+        "in_loss": 52.16,
+        "profit_making": 47.48
+      },
+      "best_fit": "Growing",
+      "confidence_gap": 11.18,
+      "forecast": [
+        {
+          "months": "2027-01-01",
+          "revenue": 8320.98,
+          "expenses": 128752262.68,
+          "net_profit": -128743941.7
+        },
+        {
+          "months": "2027-02-01",
+          "revenue": 8450.93,
+          "expenses": 129036950.36,
+          "net_profit": -129028499.44
+        },
+        {
+          "months": "2027-03-01",
+          "revenue": 8582.9,
+          "expenses": 129321638.05,
+          "net_profit": -129313055.14
+        },
+        {
+          "months": "2027-04-01",
+          "revenue": 8716.94,
+          "expenses": 129606325.73,
+          "net_profit": -129597608.79
+        },
+        {
+          "months": "2027-05-01",
+          "revenue": 8853.07,
+          "expenses": 129891013.42,
+          "net_profit": -129882160.35
+        },
+        {
+          "months": "2027-06-01",
+          "revenue": 8991.32,
+          "expenses": 130175701.1,
+          "net_profit": -130166709.78
+        }
+      ]
+    },
+    {
+      "dataset": "Practical_SME_Quarterly_Avg.csv",
+      "rows": 204,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 8.01,
+      "revenue_end": 15484469.66,
+      "revenue_growth_pct": 193434873.89,
+      "profit_margin_pct": -9477987.02,
+      "expense_ratio_pct": 9478087.02,
+      "archetype_scores": {
+        "growing": 64.99,
+        "in_loss": 50.92,
+        "profit_making": 42.48
+      },
+      "best_fit": "Growing",
+      "confidence_gap": 14.07,
+      "forecast": [
+        {
+          "months": "2027-01-28",
+          "revenue": 8340948.64,
+          "expenses": 160284289223.89,
+          "net_profit": -160275948275.26
+        },
+        {
+          "months": "2027-02-28",
+          "revenue": 8994009.04,
+          "expenses": 161388829959.79,
+          "net_profit": -161379835950.75
+        },
+        {
+          "months": "2027-03-28",
+          "revenue": 9698201.25,
+          "expenses": 162493370695.68,
+          "net_profit": -162483672494.43
+        },
+        {
+          "months": "2027-04-28",
+          "revenue": 10457528.69,
+          "expenses": 163597911431.57,
+          "net_profit": -163587453902.88
+        },
+        {
+          "months": "2027-05-28",
+          "revenue": 11276308.2,
+          "expenses": 164702452167.47,
+          "net_profit": -164691175859.26
+        },
+        {
+          "months": "2027-06-28",
+          "revenue": 12159194.63,
+          "expenses": 165806992903.36,
+          "net_profit": -165794833708.73
+        }
+      ]
+    },
+    {
+      "dataset": "Realistic_JCurve_Growth_dataset.csv",
+      "rows": 612,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 7650.85,
+      "revenue_end": 4067337294816676.0,
+      "revenue_growth_pct": 53161900897403.88,
+      "profit_margin_pct": 100.0,
+      "expense_ratio_pct": 0.0,
+      "archetype_scores": {
+        "growing": 53.39,
+        "in_loss": 7.34,
+        "profit_making": 81.51
+      },
+      "best_fit": "Profit Making",
+      "confidence_gap": 28.12,
+      "forecast": [
+        {
+          "months": "2027-01-01",
+          "revenue": 2256102532177977.5,
+          "expenses": 28385700.19,
+          "net_profit": 2256102503792277.5
+        },
+        {
+          "months": "2027-02-01",
+          "revenue": 2265011531923517.0,
+          "expenses": 28120582.06,
+          "net_profit": 2265011503802935.0
+        },
+        {
+          "months": "2027-03-01",
+          "revenue": 2255213645890242.0,
+          "expenses": 27920428.06,
+          "net_profit": 2255213617969814.0
+        },
+        {
+          "months": "2027-04-01",
+          "revenue": 2230700080494463.5,
+          "expenses": 27855972.89,
+          "net_profit": 2230700052638490.5
+        },
+        {
+          "months": "2027-05-01",
+          "revenue": 2199405096553752.5,
+          "expenses": 27961590.83,
+          "net_profit": 2199405068592161.8
+        },
+        {
+          "months": "2027-06-01",
+          "revenue": 2171080030508334.0,
+          "expenses": 28226085.22,
+          "net_profit": 2171080002282248.8
+        }
+      ]
+    },
+    {
+      "dataset": "SME_JCurve_Millions_dataset.csv",
+      "rows": 612,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 7.65,
+      "revenue_end": 4067337294816.68,
+      "revenue_growth_pct": 53160858643432.55,
+      "profit_margin_pct": 100.0,
+      "expense_ratio_pct": 0.0,
+      "archetype_scores": {
+        "growing": 53.39,
+        "in_loss": 7.34,
+        "profit_making": 81.51
+      },
+      "best_fit": "Profit Making",
+      "confidence_gap": 28.12,
+      "forecast": [
+        {
+          "months": "2027-01-01",
+          "revenue": 2256102532177.98,
+          "expenses": 28385.7,
+          "net_profit": 2256102503792.28
+        },
+        {
+          "months": "2027-02-01",
+          "revenue": 2265011531923.52,
+          "expenses": 28120.58,
+          "net_profit": 2265011503802.93
+        },
+        {
+          "months": "2027-03-01",
+          "revenue": 2255213645890.24,
+          "expenses": 27920.43,
+          "net_profit": 2255213617969.81
+        },
+        {
+          "months": "2027-04-01",
+          "revenue": 2230700080494.46,
+          "expenses": 27855.97,
+          "net_profit": 2230700052638.49
+        },
+        {
+          "months": "2027-05-01",
+          "revenue": 2199405096553.75,
+          "expenses": 27961.59,
+          "net_profit": 2199405068592.16
+        },
+        {
+          "months": "2027-06-01",
+          "revenue": 2171080030508.33,
+          "expenses": 28226.09,
+          "net_profit": 2171080002282.25
+        }
+      ]
+    }
+  ],
+  "best_base_datasets": {
+    "growing": "Practical_SME_Quarterly_Avg.csv",
+    "in_loss": "High_Risk_full_dataset.csv",
+    "profit_making": "Realistic_JCurve_Growth_dataset.csv"
+  },
+  "archetype_exports": [
+    {
+      "archetype": "Growing",
+      "source_dataset": "Practical_SME_Quarterly_Avg.csv",
+      "export_path": "D:\\Projects\\AI-CFO-Multi-Agent\\tools\\scenario_exports\\Practical_SME_Quarterly_Avg__growing.csv",
+      "status": "written",
+      "rows_written": 210,
+      "future_rows": 6
+    },
+    {
+      "archetype": "In Loss",
+      "source_dataset": "High_Risk_full_dataset.csv",
+      "export_path": "D:\\Projects\\AI-CFO-Multi-Agent\\tools\\scenario_exports\\High_Risk_full_dataset__in_loss.csv",
+      "status": "written",
+      "rows_written": 618,
+      "future_rows": 6
+    },
+    {
+      "archetype": "Profit Making",
+      "source_dataset": "Realistic_JCurve_Growth_dataset.csv",
+      "export_path": "D:\\Projects\\AI-CFO-Multi-Agent\\tools\\scenario_exports\\Realistic_JCurve_Growth_dataset__profit_making.csv",
+      "status": "written",
+      "rows_written": 618,
+      "future_rows": 6
+    }
+  ]
+}
