@@ -123,3 +123,28 @@ The system accepts CSV files with the following columns:
 
 ## 🧠 Summary
 AI-CFO is designed as an intelligent, explainable, and modular financial system that assists businesses in making better financial decisions using AI-driven insights. It bridges the gap between raw spreadsheets and executive-level strategy.
+
+---
+
+## 🧪 Testing and CI/CD
+
+This project uses **Pytest** for backend testing and **Vitest** for frontend testing. A GitHub Actions CI pipeline is configured to run tests and linters automatically on pull requests to the `main` branch.
+
+### Running Backend Tests
+Navigate to the backend directory and run:
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
+### Running Frontend Tests
+Navigate to the frontend directory and run:
+```bash
+npm run test
+```
+
+### Docker Testing Services
+You can also run the tests through Docker Compose using the dedicated test services:
+```bash
+docker compose run backend-tests
+docker compose run frontend-tests
+```

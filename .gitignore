@@ -6,6 +6,8 @@ __pycache__/
 venv/
 ENV/
 .env
+.coverage
+coverage.xml
 build/
 develop-eggs/
 dist/
@@ -42,4 +44,6 @@ data/*.csv
 !data/sample_template.csv
 /uploads/
 .env
-.env.example
+.env.local
+# Allow the example template — it has no real secrets
+!.env.example
