@@ -19,6 +19,7 @@
     "utils": "@/lib/utils",
     "ui": "@/components/ui",
     "lib": "@/lib",
+    "ai-cfo": "@/lib/ai-cfo",
     "hooks": "@/hooks"
   },
   "registries": {

@@ -1,4 +1,6 @@
-def calculate_health_score(df, kpis, ratios, risk):
+from app.core.response_models import AgentResponse, AgentFinding
+
+def calculate_health_score(df, kpis, ratios, risk) -> AgentResponse:
     profit_margin = kpis["profit_margin"]
     risk_level = risk["risk_level"]
 
@@ -43,6 +45,22 @@ def calculate_health_score(df, kpis, ratios, risk):
     else:
         penalty = -20
 
-    score = profitability + stability + efficiency + penalty
+    score = max(0, min(100, int(profitability + stability + efficiency + penalty)))
+    
+    status_summary = "Excellent" if score > 80 else "Good" if score > 60 else "Fair" if score > 40 else "Poor"
 
-    return max(0, min(100, int(score)))
+    return AgentResponse(
+        agent="health_agent",
+        confidence=0.90,
+        summary=f"Financial health score is {score}/100 ({status_summary}).",
+        findings=[
+            AgentFinding(
+                title="Health Score",
+                description=f"Overall health score calculated as {score}.",
+                severity="INFO"
+            )
+        ],
+        raw_data={
+            "health_score": score
+        }
+    )

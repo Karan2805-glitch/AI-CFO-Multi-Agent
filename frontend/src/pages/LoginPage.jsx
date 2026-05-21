@@ -170,7 +170,7 @@ const SignInTab = ({ onLogin }) => {
   const handleEmail = async (e) => {
     e.preventDefault();
     setError(''); setLoading('email');
-    const result = loginUser({ email, password });
+    const result = await loginUser({ email, password });
     if (result.success) { onLogin(result.user); }
     else { setError(result.error); setLoading(null); }
   };
@@ -193,11 +193,7 @@ const SignInTab = ({ onLogin }) => {
     setTimeout(() => onLogin(fakeUser), 400);
   };
 
-  const handleGuest = async () => {
-    setLoading('guest');
-    await new Promise(r => setTimeout(r, 400));
-    onLogin({ name: 'Guest', email: null, photo: null, isNew: false, provider: 'guest' });
-  };
+  // guest login removed
 
   return (
     <div className="flex flex-col gap-4">
@@ -229,11 +225,7 @@ const SignInTab = ({ onLogin }) => {
         </button>
       </form>
 
-      <button id="btn-guest" onClick={handleGuest} disabled={!!loading}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm text-slate-400 border border-white/8
-          hover:text-slate-200 hover:bg-white/5 hover:border-white/15 transition-all disabled:opacity-40">
-        <UserRound size={15} /> Continue as Guest
-      </button>
+      {/* Guest login removed */}
     </div>
   );
 };
@@ -254,9 +246,11 @@ const RegisterTab = ({ onLogin }) => {
     if (password !== confirm) { setError('Passwords do not match'); return; }
     if (password.length < 6)  { setError('Password must be at least 6 characters'); return; }
     setLoading('email');
-    const result = registerUser({ name, email, password });
-    if (result.success) { onLogin(result.user); }
-    else { setError(result.error); setLoading(null); }
+    (async () => {
+      const result = await registerUser({ name, email, password });
+      if (result.success) { onLogin(result.user); }
+      else { setError(result.error); setLoading(null); }
+    })();
   };
 
   const handleGoogleCred = (resp) => {

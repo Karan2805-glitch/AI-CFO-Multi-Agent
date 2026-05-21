@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UploadCloud, FileText, CheckCircle2, Loader2, Zap, AlertTriangle } from 'lucide-react';
 import { runDashboardFlow } from '../api/analyzeService';
 import { useData } from '../context/DataContext';
-import { loadSession } from '../lib/auth';
+import { loadAuth } from '../lib/auth';
 
 const steps = [
   { label: 'Starting session...', pct: 25 },
@@ -31,11 +31,14 @@ const UploadPage = ({ onSuccess }) => {
     setLoading(true);
 
     try {
-      const currentUser = loadSession();
+      const currentUser = loadAuth().user;
+      if (!currentUser) {
+        throw new Error('You must be signed in to upload files');
+      }
       const dashboardState = await runDashboardFlow({
         file: f,
         sessionPayload: {
-          username: currentUser?.name || currentUser?.email || 'guest_user',
+          username: currentUser.name || currentUser.email,
           company: currentUser?.profile?.orgName || currentUser?.company || '',
           industry: currentUser?.profile?.industry || currentUser?.industry || '',
         },

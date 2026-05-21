@@ -1,55 +1,73 @@
-from app.services.preprocessing import preprocess
+import asyncio
+
+import pandas as pd
+
+from app.core.state import FinancialAnalysisState
+from app.orchestration.orchestrator import FinancialOrchestrator
 from app.services.kpi_service import calculate_kpis
+from app.services.preprocessing import preprocess
 from app.services.ratio_service import calculate_ratios
-from app.agents.risk_agent import assess_risk
-from app.agents.recommendation_agent import generate_recommendations
-from app.agents.auditor_agent import generate_explanation
-from app.agents.health_agent import calculate_health_score
-from app.agents.forecast_agent import generate_forecast, prepare_forecast_output
-from app.agents.anomaly_agent import detect_anomalies
 
-def analyze(df):
-    # Step 1: Preprocess
-    df = preprocess(df)
-    # Step 2: KPI Calculation
-    kpis = calculate_kpis(df)
 
-    # Step 3: Ratio Calculation
-    ratios = calculate_ratios(kpis)
+async def analyze(df):
+    # Offload CPU-bound preprocessing to the thread pool.
+    def _prepare_foundation():
+        processed_df = preprocess(df)
+        kpis = calculate_kpis(processed_df)
+        ratios = calculate_ratios(kpis)
+        return processed_df, kpis, ratios
 
-    # Step 4: Risk Agent
-    risk = assess_risk(kpis, ratios, df)
+    processed_df, kpis, ratios = await asyncio.to_thread(_prepare_foundation)
 
-    # Step 5: Recommendation Agent
-    recommendations = generate_recommendations(kpis, ratios, risk, df)
+    state = FinancialAnalysisState(
+        raw_dataframe_summary=_dataframe_summary(processed_df),
+        preprocessing=_dataframe_payload(processed_df),
+        kpis=kpis,
+        ratios=ratios,
+    )
 
-    # Step 6: Auditor Agent
-    auditor = generate_explanation(kpis, ratios, risk, recommendations["recommendations"])
-
-    # Step 7: Health Agent
-    health_score = calculate_health_score(df, kpis, ratios, risk)
-
-    # Step 8: Forecasting Agent
-    forecast_values = generate_forecast(df)
-    forecast_data = prepare_forecast_output(df, forecast_values)
-
-    #Step 9: Anomaly Agent
-    anomalies = detect_anomalies(df)
+    final_state = await FinancialOrchestrator().run_pipeline(state)
 
     return {
-    "kpi": kpis,
-    "ratios": ratios,
-    "risk": risk,
-    "recommendations": recommendations,
-    "health_score": health_score,
-    "auditor": auditor,
-    "forecast": forecast_data,
-    "anomalies": anomalies
-}
+        "kpi": final_state.kpis,
+        "kpis": final_state.kpis,
+        "ratios": final_state.ratios,
+        "risk": final_state.risk or {},
+        "recommendations": final_state.recommendations or {},
+        "health_score": final_state.health or {},
+        "health": final_state.health or {},
+        "auditor": final_state.auditor or {},
+        "forecast": final_state.forecast or {},
+        "anomalies": final_state.anomalies or {},
+        "execution_trace": final_state.execution_trace,
+        "completed_agents": final_state.completed_agents,
+        "failed_agents": final_state.failed_agents,
+        "warnings": final_state.warnings,
+        "pipeline_status": final_state.pipeline_status,
+        "overall_confidence": final_state.overall_confidence,
+        "state": final_state.model_dump(),
+    }
 
-# if __name__ == "__main__":
-#     import pandas as pd
 
-#     df = pd.read_csv("app/services/sample.csv")
-#     result = analyze(df)
-#     print(result)
+def _dataframe_payload(df: pd.DataFrame) -> dict:
+    serializable_df = df.copy()
+    datetime_columns = []
+    for column in serializable_df.columns:
+        if pd.api.types.is_datetime64_any_dtype(serializable_df[column]):
+            datetime_columns.append(column)
+            serializable_df[column] = serializable_df[column].dt.strftime("%Y-%m-%dT%H:%M:%S")
+    return {
+        "dataframe_records": serializable_df.to_dict(orient="records"),
+        "dataframe_columns": list(serializable_df.columns),
+        "datetime_columns": datetime_columns,
+        "row_count": int(len(serializable_df)),
+        "column_count": int(len(serializable_df.columns)),
+    }
+
+
+def _dataframe_summary(df: pd.DataFrame) -> dict:
+    return {
+        "row_count": int(len(df)),
+        "column_count": int(len(df.columns)),
+        "columns": list(df.columns),
+    }

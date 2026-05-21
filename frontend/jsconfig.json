@@ -3,6 +3,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
+      ,
+      "ai-cfo-lib/*": ["./src/lib/ai-cfo/*"]
     }
   }
 }
