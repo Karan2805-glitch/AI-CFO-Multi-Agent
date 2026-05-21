@@ -223,6 +223,11 @@ The stored results endpoint reshapes that data for cards, charts, and insight pa
 - Debug prints were removed from preprocessing
 - Anomalies are now included in stored and returned API results
 - Health score behavior is documented as a rule-based scoring model
+- Backend now includes `pytest` + `pytest-cov` test coverage setup
+- Frontend now includes `vitest` + React Testing Library tests
+- GitHub Actions now runs backend/frontend tests and lint checks on pull requests
+- Docker Compose includes dedicated `backend-tests` and `frontend-tests` services
+- Database config now supports Neon PostgreSQL via `DATABASE_URL` and `psycopg2-binary`
 
 ## Limitations
 
@@ -230,6 +235,29 @@ The stored results endpoint reshapes that data for cards, charts, and insight pa
 - Anomaly detection is unsupervised and not trained on labeled fraud or failure events
 - Health score is rule-based, not learned from historical outcomes
 - Risk classification is partly heuristic and tied to current threshold logic
+
+## 🧪 Testing and CI/CD
+
+This project uses **Pytest** for backend testing and **Vitest** for frontend testing. A GitHub Actions CI pipeline is configured to run tests and linters automatically on pull requests to the `main` branch.
+
+### Running Backend Tests
+Navigate to the backend directory and run:
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
+### Running Frontend Tests
+Navigate to the frontend directory and run:
+```bash
+npm run test
+```
+
+### Docker Testing Services
+You can also run the tests through Docker Compose using the dedicated test services:
+```bash
+docker compose run backend-tests
+docker compose run frontend-tests
+```
 
 ## Summary
 

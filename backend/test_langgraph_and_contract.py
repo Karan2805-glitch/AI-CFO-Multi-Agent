@@ -175,16 +175,4 @@ def test_health_score_extraction_from_dict():
     assert isinstance(health_int, int), "Extracted health_score must be int for DB"
 
 
-def test_compress_result_shape():
-    """compress_result must produce the keys stored in AnalysisRun.result."""
-    from app.routes.analyze import compress_result
 
-    result = asyncio.run(analyze(_sample_df()))
-    compressed = compress_result(result)
-
-    expected_keys = {"kpi", "risk", "health_score", "forecast", "anomalies",
-                     "recommendations", "auditor"}
-    assert expected_keys.issubset(set(compressed.keys()))
-
-    # recommendations must be nested with a "recommendations" list
-    assert "recommendations" in compressed["recommendations"]

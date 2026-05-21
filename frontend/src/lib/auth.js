@@ -5,8 +5,9 @@
  * User shape: { id, name, email, password(hashed), photo, provider, createdAt }
  */
 
-const USERS_KEY   = 'aicfo_users';
-const SESSION_KEY = 'aicfo_session';
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
+const TOKEN_KEY   = 'aicfo_token';
+const USER_KEY    = 'aicfo_user';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const getUsers = () => {
@@ -22,66 +23,42 @@ const simpleHash = (str) => {
   return h.toString(16);
 };
 
-// ── Session ───────────────────────────────────────────────────────────────────
-export const saveSession = (user) =>
-  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-
-export const loadSession = () => {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
-  catch { return null; }
+// ── Session (store JWT + user) ─────────────────────────────────────────────────
+export const saveAuth = (token, user) => {
+  try { localStorage.setItem(TOKEN_KEY, token); localStorage.setItem(USER_KEY, JSON.stringify(user)); }
+  catch (e) { console.warn('saveAuth failed', e); }
 };
 
-export const clearSession = () =>
-  localStorage.removeItem(SESSION_KEY);
+export const loadAuth = () => {
+  try { return { token: localStorage.getItem(TOKEN_KEY), user: JSON.parse(localStorage.getItem(USER_KEY) || 'null') }; }
+  catch { return { token: null, user: null }; }
+};
 
-// ── Register ──────────────────────────────────────────────────────────────────
-/**
- * @returns {{ success, user, error }}
- */
-export const registerUser = ({ name, email, password }) => {
-  if (!name?.trim() || !email?.trim() || !password?.trim())
-    return { success: false, error: 'All fields are required' };
+export const clearAuth = () => { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); };
 
-  const users = getUsers();
-  if (users.find((u) => u.email.toLowerCase() === email.toLowerCase()))
-    return { success: false, error: 'An account with this email already exists' };
-
-  const user = {
-    id:        `u_${Date.now()}`,
-    name:      name.trim(),
-    email:     email.trim().toLowerCase(),
-    password:  simpleHash(password),
-    photo:     null,
-    provider:  'email',
-    isNew:     true,
-    createdAt: new Date().toISOString(),
-  };
-
-  setUsers([...users, user]);
-  const { password: _, ...safeUser } = user; // never expose hash
-  saveSession(safeUser);
-  return { success: true, user: safeUser };
+// ── Register (backend) ───────────────────────────────────────────────────────
+export const registerUser = async ({ name, email, password }) => {
+  const res = await fetch(`${API_BASE}/auth/register`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password }),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) return { success: false, error: payload.detail || 'Registration failed' };
+  saveAuth(payload.access_token, payload.user);
+  return { success: true, user: payload.user };
 };
 
 // ── Login ─────────────────────────────────────────────────────────────────────
-export const loginUser = ({ email, password }) => {
-  if (!email?.trim() || !password?.trim())
-    return { success: false, error: 'Email and password are required' };
-
-  const users = getUsers();
-  const found = users.find(
-    (u) => u.email.toLowerCase() === email.toLowerCase() &&
-           u.provider === 'email'
-  );
-
-  if (!found)   return { success: false, error: 'No account found with this email' };
-  if (found.password !== simpleHash(password))
-    return { success: false, error: 'Incorrect password' };
-
-  const { password: _, ...safeUser } = found;
-  const sessionUser = { ...safeUser, isNew: false };
-  saveSession(sessionUser);
-  return { success: true, user: sessionUser };
+export const loginUser = async ({ email, password }) => {
+  if (!email?.trim() || !password?.trim()) return { success: false, error: 'Email and password are required' };
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) return { success: false, error: payload.detail || 'Login failed' };
+  saveAuth(payload.access_token, payload.user);
+  return { success: true, user: payload.user };
 };
 
 // ── Google OAuth (GSI) ────────────────────────────────────────────────────────
@@ -99,35 +76,14 @@ const decodeGoogleJWT = (credential) => {
   }
 };
 
-export const handleGoogleCredential = (credentialResponse) => {
+export const handleGoogleCredential = async (credentialResponse) => {
+  // For now decode the Google JWT client-side and send to backend in future.
   const payload = decodeGoogleJWT(credentialResponse.credential);
   if (!payload) return { success: false, error: 'Invalid Google token' };
-
-  const { name, email, picture, sub } = payload;
-  const users = getUsers();
-  const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-
-  if (existing) {
-    // Returning Google user
-    const { password: _, ...safeUser } = existing;
-    const sessionUser = { ...safeUser, isNew: false, provider: 'google' };
-    saveSession(sessionUser);
-    return { success: true, user: sessionUser };
-  }
-
-  // New Google user — register them
-  const user = {
-    id:        `g_${sub}`,
-    name,
-    email:     email.toLowerCase(),
-    photo:     picture ?? null,
-    provider:  'google',
-    isNew:     true,
-    createdAt: new Date().toISOString(),
-  };
-  setUsers([...users, user]);
-  saveSession(user);
-  return { success: true, user };
+  // Attempt to register/login via backend using email; backend social login not implemented yet.
+  const { name, email, picture } = payload;
+  // Try login; if fails, return user info for client-side flow.
+  return { success: false, error: 'Google sign-in not wired to backend yet', user: { name, email, photo: picture } };
 };
 
 // ── Google Client ID ──────────────────────────────────────────────────────────

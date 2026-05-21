@@ -7,9 +7,13 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=sqlite:///aicfo.db
-    volumes:
-      - ./backend/aicfo.db:/app/aicfo.db
+      # Load from your .env file at runtime, or set this in Render/Railway env vars
+      - DATABASE_URL=${DATABASE_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build:
@@ -20,3 +24,18 @@ services:
       - VITE_API_BASE=http://localhost:8000
     depends_on:
       - backend
+
+  backend-tests:
+    build: 
+      context: ./backend
+    environment:
+      # Use in-memory SQLite for fast, isolated tests (no real DB needed)
+      - DATABASE_URL=sqlite:///:memory:
+    command: ["pytest", "--cov=app", "--cov-report=xml"]
+
+  frontend-tests:
+    build:
+      context: ./frontend
+    command: ["npm", "run", "test"]
+    environment:
+      - CI=true

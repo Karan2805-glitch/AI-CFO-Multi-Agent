@@ -11,7 +11,7 @@ import Dashboard      from './pages/Dashboard';
 import Ledger         from './pages/Ledger';
 import Forecast       from './pages/Forecast';
 import { useData }    from './context/DataContext';
-import { loadSession, saveSession, clearSession } from './lib/auth';
+import { loadAuth, saveAuth, clearAuth } from './lib/auth';
 
 /**
  * Initial state rules (simple & predictable):
@@ -26,11 +26,11 @@ const getInitialState = (hasData) => (hasData ? 'app' : 'login');
 export default function App() {
   const { hasData } = useData();
   const [authState, setAuthState] = useState(() => getInitialState(hasData));
-  const [currentUser, setCurrentUser] = useState(() => loadSession());
+  const [currentUser, setCurrentUser] = useState(() => loadAuth().user);
 
   const handleLogin = (user) => {
     setCurrentUser(user);
-    saveSession(user);
+    saveAuth(loadAuth().token, user);
     // New user (not guest) → onboarding wizard
     if (user.isNew && user.provider !== 'guest') {
       setAuthState('onboarding');
@@ -41,12 +41,12 @@ export default function App() {
 
   const handleOnboardingComplete = (userWithProfile) => {
     setCurrentUser(userWithProfile);
-    saveSession(userWithProfile);
+    saveAuth(loadAuth().token, userWithProfile);
     setAuthState('upload');
   };
 
   const handleLogout = () => {
-    clearSession();
+    clearAuth();
     setCurrentUser(null);
     setAuthState('login');
   };

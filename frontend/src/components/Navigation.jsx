@@ -171,8 +171,8 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
               </div>
           }
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-300 truncate">{user?.name ?? 'Guest'}</p>
-            <p className="text-[10px] text-slate-600 truncate">{user?.email ?? 'guest session'}</p>
+            <p className="text-xs font-semibold text-slate-300 truncate">{user?.name ?? 'Not signed in'}</p>
+            <p className="text-[10px] text-slate-600 truncate">{user?.email ?? ''}</p>
           </div>
           <button
             onClick={() => { if (onLogout) { clearDashboardState(); onLogout(); } }}
