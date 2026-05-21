@@ -220,6 +220,156 @@ body {
   text-transform: uppercase;
 }
 
+/* ══════════════════════════════════════════════════════════════
+ * ORCHESTRATION VISUALIZATIONS
+ * ══════════════════════════════════════════════════════════════ */
+
+/* ── Node status animations ──────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px var(--glow-color, rgba(59,130,246,0.4))); }
+  50%      { filter: drop-shadow(0 0 18px var(--glow-color, rgba(59,130,246,0.7))); }
+}
+
+@keyframes node-ring-pulse {
+  0%, 100% { stroke-opacity: 0.3; stroke-width: 2; }
+  50%      { stroke-opacity: 0.7; stroke-width: 4; }
+}
+
+@keyframes dash-flow {
+  to { stroke-dashoffset: -20; }
+}
+
+@keyframes flow-particle {
+  0%   { offset-distance: 0%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.node-idle .node-body { fill: rgba(100,116,139,0.12); stroke: rgba(100,116,139,0.25); }
+.node-running .node-body {
+  fill: rgba(59,130,246,0.15);
+  stroke: rgba(59,130,246,0.5);
+  animation: pulse-glow 2s ease-in-out infinite;
+  --glow-color: rgba(59,130,246,0.5);
+}
+.node-completed .node-body {
+  fill: rgba(16,185,129,0.12);
+  stroke: rgba(16,185,129,0.4);
+}
+.node-failed .node-body {
+  fill: rgba(244,63,94,0.12);
+  stroke: rgba(244,63,94,0.4);
+}
+
+.edge-active {
+  stroke-dasharray: 6 4;
+  animation: dash-flow 0.8s linear infinite;
+}
+
+.edge-completed {
+  stroke: rgba(16,185,129,0.35);
+}
+
+.edge-idle {
+  stroke: rgba(100,116,139,0.15);
+  stroke-dasharray: 4 4;
+}
+
+/* ── Timeline bars ───────────────────────────────────────── */
+.timeline-bar {
+  animation: slide-in-right 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.timeline-bar:nth-child(1) { animation-delay: 0.1s; }
+.timeline-bar:nth-child(2) { animation-delay: 0.3s; }
+.timeline-bar:nth-child(3) { animation-delay: 0.5s; }
+.timeline-bar:nth-child(4) { animation-delay: 0.7s; }
+
+/* ── Priority tier accents ───────────────────────────────── */
+.priority-critical {
+  border-left: 3px solid #FF1744;
+  background: linear-gradient(90deg, rgba(255,23,68,0.06) 0%, transparent 40%);
+}
+.priority-high {
+  border-left: 3px solid #F59E0B;
+  background: linear-gradient(90deg, rgba(245,158,11,0.06) 0%, transparent 40%);
+}
+.priority-medium {
+  border-left: 3px solid #3B82F6;
+  background: linear-gradient(90deg, rgba(59,130,246,0.04) 0%, transparent 40%);
+}
+.priority-low {
+  border-left: 3px solid #64748B;
+  background: linear-gradient(90deg, rgba(100,116,139,0.04) 0%, transparent 40%);
+}
+
+/* ── Executive panels ────────────────────────────────────── */
+.glass-executive {
+  background: linear-gradient(135deg, rgba(13,21,38,0.75), rgba(8,14,28,0.85));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.glass-executive-accent {
+  background: linear-gradient(135deg, rgba(13,21,38,0.8), rgba(8,14,28,0.9));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(139,92,246,0.15);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.35),
+    0 0 40px rgba(139,92,246,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ── Confidence ring ─────────────────────────────────────── */
+@keyframes confidence-fill {
+  from { stroke-dasharray: 0 999; }
+}
+
+/* ── Section fade-in ─────────────────────────────────────── */
+.section-enter > * {
+  opacity: 0;
+  animation: fade-in-up 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.section-enter > *:nth-child(1) { animation-delay: 0.08s; }
+.section-enter > *:nth-child(2) { animation-delay: 0.16s; }
+.section-enter > *:nth-child(3) { animation-delay: 0.24s; }
+.section-enter > *:nth-child(4) { animation-delay: 0.32s; }
+.section-enter > *:nth-child(5) { animation-delay: 0.40s; }
+.section-enter > *:nth-child(6) { animation-delay: 0.48s; }
+.section-enter > *:nth-child(7) { animation-delay: 0.56s; }
+.section-enter > *:nth-child(8) { animation-delay: 0.64s; }
+
+/* ── Void theme overrides for new components ─────────────── */
+[data-theme="void"] .glass-executive {
+  background: linear-gradient(135deg, rgba(14,14,14,0.85), rgba(8,8,8,0.9));
+}
+[data-theme="void"] .glass-executive-accent {
+  background: linear-gradient(135deg, rgba(14,14,14,0.88), rgba(8,8,8,0.92));
+}
+
 /* ────────────────────────────────────────────────────────────
  * PDF EXPORT SPECIFIC STYLES
  * ──────────────────────────────────────────────────────────── */

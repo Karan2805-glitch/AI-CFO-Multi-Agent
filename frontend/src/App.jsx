@@ -84,7 +84,7 @@ export default function App() {
             onNewUpload={() => setAuthState('upload')} 
           />
           <main className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-8">
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-6xl mx-auto">
               <Routes>
                 <Route path="/"          element={<Navigate to="/dashboard" replace />} />
                 <Route path="/upload"    element={<Navigate to="/dashboard" replace />} />

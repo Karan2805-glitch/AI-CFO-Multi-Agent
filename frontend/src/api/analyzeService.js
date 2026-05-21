@@ -60,6 +60,11 @@ export const fetchRuns = async (sessionId) => {
   return parseJson(response);
 };
 
+export const fetchAgentResult = async (runId, agentName) => {
+  const response = await fetch(`${API_BASE}/results/${encodeURIComponent(runId)}/${encodeURIComponent(agentName)}`);
+  return parseJson(response);
+};
+
 export const runDashboardFlow = async ({ file, sessionPayload, onStep }) => {
   onStep?.(0);
   const sessionRes = await startSession(sessionPayload);

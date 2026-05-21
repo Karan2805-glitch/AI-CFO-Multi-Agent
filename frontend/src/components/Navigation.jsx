@@ -9,10 +9,10 @@ import { clearDashboardState, fetchRuns, fetchResults } from '../api/analyzeServ
 import { useData } from '../context/DataContext';
 
 const navItems = [
-  { to: '/upload',    icon: Upload,          label: 'Upload Data',    color: 'group-hover:text-sky-400',    active: 'text-sky-400',    ring: 'border-sky-500/30 bg-sky-500/10'    },
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard',      color: 'group-hover:text-blue-400',  active: 'text-blue-400',   ring: 'border-blue-500/30 bg-blue-500/10'   },
-  { to: '/ledger',    icon: Wallet,          label: 'Ledger Vault',   color: 'group-hover:text-purple-400', active: 'text-purple-400', ring: 'border-purple-500/30 bg-purple-500/10'},
-  { to: '/forecast',  icon: BrainCircuit,    label: 'Forecast Engine',color: 'group-hover:text-emerald-400',active: 'text-emerald-400',ring: 'border-emerald-500/30 bg-emerald-500/10'},
+  { to: '/upload',    icon: Upload,          label: 'Upload Data',     color: 'group-hover:text-sky-400',    active: 'text-sky-400',    ring: 'border-sky-500/30 bg-sky-500/10'    },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Command Center',  color: 'group-hover:text-blue-400',  active: 'text-blue-400',   ring: 'border-blue-500/30 bg-blue-500/10'   },
+  { to: '/ledger',    icon: Wallet,          label: 'Ledger Vault',    color: 'group-hover:text-purple-400', active: 'text-purple-400', ring: 'border-purple-500/30 bg-purple-500/10'},
+  { to: '/forecast',  icon: BrainCircuit,    label: 'Forecast Engine', color: 'group-hover:text-emerald-400',active: 'text-emerald-400',ring: 'border-emerald-500/30 bg-emerald-500/10'},
 ];
 
 const Navigation = ({ user, onLogout, onNewUpload }) => {

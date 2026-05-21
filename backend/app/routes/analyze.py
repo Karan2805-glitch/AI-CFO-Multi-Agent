@@ -9,20 +9,20 @@ from app.services.analysis_service import analyze
 
 router = APIRouter()
 
-
 def compress_result(result: dict):
+    # Retain the full agent response structures so the frontend has direct access to rich intelligence data
     return {
         "kpi": result.get("kpi"),
         "risk": result.get("risk"),
         "health_score": result.get("health_score"),
         "forecast": result.get("forecast"),
-        "anomalies": result.get("anomalies", []),
-
-        "recommendations": {
-            "recommendations": result.get("recommendations", {}).get("recommendations", [])
-        },
-
-        "auditor": result.get("auditor", {})
+        "anomalies": result.get("anomalies", {}),
+        "recommendations": result.get("recommendations", {}),
+        "auditor": result.get("auditor", {}),
+        "completed_agents": result.get("completed_agents", []),
+        "failed_agents": result.get("failed_agents", []),
+        "overall_confidence": result.get("overall_confidence"),
+        "execution_trace": result.get("execution_trace", {}),
     }
 
 
@@ -54,7 +54,7 @@ async def analyze_csv(
         # The DB column is Integer, so we must not store the raw dict.
         raw_health = compressed.get("health_score", {})
         if isinstance(raw_health, dict):
-            health_score = int(raw_health.get("overall_score", raw_health.get("score", 0)))
+            health_score = int(raw_health.get("health_score", raw_health.get("overall_score", raw_health.get("score", 0))))
         else:
             health_score = int(raw_health) if raw_health else 0
         risk_level = compressed.get("risk", {}).get("risk_level", "UNKNOWN")

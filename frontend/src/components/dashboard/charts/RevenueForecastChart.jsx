@@ -18,19 +18,30 @@ const buildData = (revenueTrend, forecast, expenseTrend) => {
   const exps = Array.isArray(expenseTrend) ? expenseTrend   : [];
   
   const data = [];
+  let lastRevenue = null;
+
   hist.forEach((v, i) => {
     const revenueVal = typeof v === 'object' && v !== null ? v.revenue : v;
-    const periodVal = typeof v === 'object' && v !== null && v.month ? v.month : `M${data.length + 1}`;
+    const expenseVal = typeof exps[i] === 'object' && exps[i] !== null ? exps[i].expenses ?? exps[i].value : exps[i];
+    const periodVal = typeof v === 'object' && v !== null && v.month ? v.month : `M${i + 1}`;
+    lastRevenue = revenueVal;
     data.push({ 
       period: periodVal, 
       revenue: revenueVal, 
-      expenses: exps[i] ?? 0,
+      expenses: expenseVal ?? 0,
       forecast: null 
     });
   });
-  fore.forEach((v) => {
+
+  // Bridge point: connect historical to forecast
+  if (lastRevenue !== null && fore.length > 0) {
+    const firstForeVal = typeof fore[0] === 'object' && fore[0] !== null ? fore[0].revenue || fore[0].forecast : fore[0];
+    data[data.length - 1].forecast = lastRevenue;
+  }
+
+  fore.forEach((v, i) => {
     const forecastVal = typeof v === 'object' && v !== null ? v.revenue || v.forecast : v;
-    const periodVal = typeof v === 'object' && v !== null && v.month ? v.month : `F${data.length + 1}`;
+    const periodVal = typeof v === 'object' && v !== null && v.month ? v.month : `F${i + 1}`;
     data.push({ 
       period: periodVal, 
       revenue: null, 
