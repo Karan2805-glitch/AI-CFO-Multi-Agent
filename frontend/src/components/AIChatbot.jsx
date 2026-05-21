@@ -111,8 +111,13 @@ const AIChatbot = () => {
   const [newMsgId, setNewMsgId] = useState(null);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  const isFirstMount = useRef(true);
 
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
