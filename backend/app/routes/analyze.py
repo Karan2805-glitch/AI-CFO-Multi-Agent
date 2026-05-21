@@ -11,7 +11,6 @@ from app.services.analysis_service import analyze
 
 router = APIRouter()
 
-
 @router.post("/analyze")
 async def analyze_csv(
     session_id: str = Query(...),
@@ -38,7 +37,7 @@ async def analyze_csv(
 
         raw_health = result.get("health_score", {})
         if isinstance(raw_health, dict):
-            health_score = int(raw_health.get("overall_score", raw_health.get("score", 0)))
+            health_score = int(raw_health.get("health_score", raw_health.get("overall_score", raw_health.get("score", 0))))
         else:
             health_score = int(raw_health) if raw_health else 0
         risk_level = result.get("risk", {}).get("risk_level", "UNKNOWN")

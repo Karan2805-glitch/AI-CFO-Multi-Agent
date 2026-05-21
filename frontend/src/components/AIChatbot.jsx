@@ -109,11 +109,16 @@ const AIChatbot = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [newMsgId, setNewMsgId] = useState(null);
-  const bottomRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages, isTyping]);
 
   const getTime = () =>
@@ -168,12 +173,11 @@ const AIChatbot = () => {
       </div>
 
       {/* ── Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 min-h-0">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 min-h-0">
         {messages.map(msg => (
           <MessageBubble key={msg.id} msg={msg} isNew={msg.id === newMsgId} />
         ))}
         {isTyping && <TypingIndicator />}
-        <div ref={bottomRef} />
       </div>
 
       {/* ── Suggested Prompts */}

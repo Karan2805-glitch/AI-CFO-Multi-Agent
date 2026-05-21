@@ -49,7 +49,7 @@ def forecast_revenue_prophet(df, periods=3):
         
         # Extract only the future predicted steps
         future_preds = forecast['yhat'].tail(periods).tolist()
-        return [round(float(v), 2) for v in future_preds]
+        return [round(max(0.0, float(v)), 2) for v in future_preds]
     except Exception as e:
         print(f"Prophet forecast failed: {e}")
         return []
@@ -77,14 +77,14 @@ def forecast_revenue_ml(df, periods=3):
         for i in range(1, periods + 1):
             future_x = np.array([[last_index + i - 1]])
             pred = model.predict(future_x)[0]
-            forecasts.append(round(float(pred), 2))
+            forecasts.append(round(max(0.0, float(pred)), 2))
     else:
         slope, intercept = np.polyfit(np.arange(len(revenues)), y, 1)
 
         for i in range(1, periods + 1):
             future_index = last_index + i - 1
             pred = slope * future_index + intercept
-            forecasts.append(round(float(pred), 2))
+            forecasts.append(round(max(0.0, float(pred)), 2))
 
     return forecasts
 
@@ -104,8 +104,17 @@ def forecast_revenue_arima(df, periods=3):
         model_fit = model.fit()
 
         forecast = model_fit.forecast(steps=periods)
+        values = [round(max(0.0, float(v)), 2) for v in forecast]
 
-        return [round(float(v), 2) for v in forecast]
+        # Detect degenerate output: if all values are nearly identical
+        # (ARIMA converges to constant on short series), reject and fallback
+        if len(values) >= 2:
+            spread = max(values) - min(values)
+            avg = sum(abs(v) for v in values) / len(values) if values else 1
+            if avg > 0 and spread / avg < 0.01:
+                return []  # Flat prediction — let linear regression handle it
+
+        return values
 
     except Exception:
         return []
@@ -127,8 +136,8 @@ def generate_forecast(df, periods=3):
         if forecast_values:
             model_used = "PROPHET"
         
-    # Then ARIMA
-    if not forecast_values and ARIMA_AVAILABLE:
+    # Then ARIMA (skip for very short series where ARIMA is unreliable)
+    if not forecast_values and ARIMA_AVAILABLE and len(df) >= 6:
         forecast_values = forecast_revenue_arima(df, periods)
         if forecast_values:
             model_used = "ARIMA"
@@ -291,8 +300,8 @@ def _build_scenarios(forecast_values, volatility_label):
 
     return {
         "expected": expected,
-        "optimistic": [round(float(value) * (1 + scenario_adjustment), 2) for value in expected],
-        "pessimistic": [round(float(value) * (1 - scenario_adjustment), 2) for value in expected],
+        "optimistic": [round(max(0.0, float(value) * (1 + scenario_adjustment)), 2) for value in expected],
+        "pessimistic": [round(max(0.0, float(value) * (1 - scenario_adjustment)), 2) for value in expected],
     }
 
 
