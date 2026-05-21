@@ -8,6 +8,9 @@ ENV/
 .env
 .coverage
 coverage.xml
+*.db
+*.sqlite3
+.pytest_cache/
 build/
 develop-eggs/
 dist/
@@ -47,3 +50,7 @@ data/*.csv
 .env.local
 # Allow the example template — it has no real secrets
 !.env.example
+
+# --- Generated artefacts (keep sources, ignore outputs) ---
+tools/*.pdf
+tools/*.db
