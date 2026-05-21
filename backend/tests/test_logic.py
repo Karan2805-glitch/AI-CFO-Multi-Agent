@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 # A basic test to verify that our data tools or preprocessing logic can be imported and works
 def test_pandas_basic_operations():
