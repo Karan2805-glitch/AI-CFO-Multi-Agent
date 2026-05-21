@@ -57,6 +57,7 @@ win32_setctime==1.2.0
 
 pytest==8.2.2
 pytest-cov==5.0.0
+pytest-asyncio
 flake8==7.0.0
 
 python-jose[cryptography]>=3.3.0

@@ -9,6 +9,9 @@ services:
     environment:
         # Load from your .env file at runtime, or set this in Render/Railway env vars
         - DATABASE_URL=${DATABASE_URL:-${NEON_DATABASE_URL:-postgresql://postgres:postgres@db:5432/ai_cfo}}
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s

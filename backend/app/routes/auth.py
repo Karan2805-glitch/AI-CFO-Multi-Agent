@@ -60,7 +60,9 @@ def register(payload: RegisterPayload, db: Session = Depends(get_db)):
     db.refresh(user)
 
     token = create_access_token({"sub": user.email, "user_id": user.id})
-    return {"access_token": token, "token_type": "bearer", "user": user.to_dict()}
+    user_dict = user.to_dict()
+    user_dict["isNew"] = True
+    return {"access_token": token, "token_type": "bearer", "user": user_dict}
 
 
 @router.post("/login")
@@ -72,7 +74,9 @@ def login(payload: LoginPayload, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = create_access_token({"sub": user.email, "user_id": user.id})
-    return {"access_token": token, "token_type": "bearer", "user": user.to_dict()}
+    user_dict = user.to_dict()
+    user_dict["isNew"] = False
+    return {"access_token": token, "token_type": "bearer", "user": user_dict}
 
 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
