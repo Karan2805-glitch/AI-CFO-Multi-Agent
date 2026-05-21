@@ -32,3 +32,25 @@ class AnalysisRun(Base):
     error_message = Column(String)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True, default=lambda: f"u_{generate(size=10)}")
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=False, index=True)
+    hashed_password = Column(String, nullable=True)
+    provider = Column(String, default="email")
+    photo = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "provider": self.provider,
+            "photo": self.photo,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }

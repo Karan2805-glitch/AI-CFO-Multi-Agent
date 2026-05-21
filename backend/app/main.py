@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import analyze, session, results, runs
+from app.routes import analyze, session, results, runs, auth
 
 app = FastAPI(title="AI CFO Backend")
 
@@ -18,6 +18,7 @@ app.include_router(analyze, prefix="/analyze")
 app.include_router(session, prefix="/session")
 app.include_router(results, prefix="/results")
 app.include_router(runs, prefix="/runs")
+app.include_router(auth, prefix="/auth")
 
 @app.get("/")
 def root():
