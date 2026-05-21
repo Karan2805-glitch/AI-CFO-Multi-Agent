@@ -15,7 +15,7 @@ jobs:
 
     # ── Real Postgres service — no SQLite ────────────────────────────────────
     services:
-      postgres:
+      db:
         image: postgres:16
         env:
           POSTGRES_USER: aicfo
@@ -30,7 +30,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: "postgresql://aicfo:aicfo_test@localhost:5432/aicfo_test"
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
 
     defaults:
       run:

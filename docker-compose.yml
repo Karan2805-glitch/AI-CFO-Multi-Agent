@@ -7,13 +7,26 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # Load from your .env file at runtime, or set this in Render/Railway env vars
-      - DATABASE_URL=${DATABASE_URL}
+        # Load from your .env file at runtime, or set this in Render/Railway env vars
+        - DATABASE_URL=${DATABASE_URL:-${NEON_DATABASE_URL:-postgresql://postgres:postgres@db:5432/ai_cfo}}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_cfo
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD","pg_isready","-U","postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build:
@@ -29,8 +42,8 @@ services:
     build: 
       context: ./backend
     environment:
-      # Use in-memory SQLite for fast, isolated tests (no real DB needed)
-      - DATABASE_URL=sqlite:///:memory:
+        # Use PostgreSQL for tests (isolated test DB)
+        DATABASE_URL: "${NEON_DATABASE_URL:-postgresql://postgres:postgres@db:5432/ai_cfo_test}"
     command: ["pytest", "--cov=app", "--cov-report=xml"]
 
   frontend-tests:
