@@ -42,4 +42,3 @@ data/*.csv
 !data/sample_template.csv
 /uploads/
 .env
-.env.example

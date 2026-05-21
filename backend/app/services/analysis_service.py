@@ -1,3 +1,5 @@
+import asyncio
+
 import pandas as pd
 
 from app.core.state import FinancialAnalysisState
@@ -8,11 +10,14 @@ from app.services.ratio_service import calculate_ratios
 
 
 async def analyze(df):
-    # analysis_service now only prepares shared state and preserves the API
-    # contract. Execution order and state mutation live in the orchestrator.
-    processed_df = preprocess(df)
-    kpis = calculate_kpis(processed_df)
-    ratios = calculate_ratios(kpis)
+    # Offload CPU-bound preprocessing to the thread pool.
+    def _prepare_foundation():
+        processed_df = preprocess(df)
+        kpis = calculate_kpis(processed_df)
+        ratios = calculate_ratios(kpis)
+        return processed_df, kpis, ratios
+
+    processed_df, kpis, ratios = await asyncio.to_thread(_prepare_foundation)
 
     state = FinancialAnalysisState(
         raw_dataframe_summary=_dataframe_summary(processed_df),
@@ -47,12 +52,10 @@ async def analyze(df):
 def _dataframe_payload(df: pd.DataFrame) -> dict:
     serializable_df = df.copy()
     datetime_columns = []
-
     for column in serializable_df.columns:
         if pd.api.types.is_datetime64_any_dtype(serializable_df[column]):
             datetime_columns.append(column)
             serializable_df[column] = serializable_df[column].dt.strftime("%Y-%m-%dT%H:%M:%S")
-
     return {
         "dataframe_records": serializable_df.to_dict(orient="records"),
         "dataframe_columns": list(serializable_df.columns),
@@ -68,11 +71,3 @@ def _dataframe_summary(df: pd.DataFrame) -> dict:
         "column_count": int(len(df.columns)),
         "columns": list(df.columns),
     }
-
-
-# if __name__ == "__main__":
-#     import pandas as pd
-#
-#     df = pd.read_csv("app/services/sample.csv")
-#     result = analyze(df)
-#     print(result)
