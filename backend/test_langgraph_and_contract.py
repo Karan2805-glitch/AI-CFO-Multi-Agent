@@ -87,6 +87,43 @@ def test_langgraph_stage_map_correctness():
     assert STAGE_MAP["auditor"] == "stage_4_executive_synthesis"
 
 
+def test_langgraph_runtime_wrapper_executes_orchestrator():
+    """The compiled LangGraph wrapper should delegate to FinancialOrchestrator."""
+    from app.orchestration.langgraph_pipeline import langgraph_app
+
+    processed_df = preprocess(_sample_df())
+    kpis = calculate_kpis(processed_df)
+    state = FinancialAnalysisState(
+        raw_dataframe_summary={
+            "row_count": int(len(processed_df)),
+            "column_count": int(len(processed_df.columns)),
+            "columns": list(processed_df.columns),
+        },
+        preprocessing={
+            "dataframe_records": processed_df.assign(
+                months=processed_df["months"].dt.strftime("%Y-%m-%dT%H:%M:%S")
+            ).to_dict(orient="records"),
+            "dataframe_columns": list(processed_df.columns),
+            "datetime_columns": ["months"],
+            "row_count": int(len(processed_df)),
+            "column_count": int(len(processed_df.columns)),
+        },
+        kpis=kpis,
+        ratios=calculate_ratios(kpis),
+    )
+
+    result = asyncio.run(langgraph_app.ainvoke(state))
+
+    assert result["pipeline_status"] == "COMPLETED"
+    assert result["forecast"]
+    assert result["anomalies"]
+    assert result["risk"]
+    assert result["recommendations"]
+    assert result["health"]
+    assert result["auditor"]
+    assert result["preprocessing"]["graph_snapshot"]["nodes"]
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Frontend contract keys from analyze()
 # ─────────────────────────────────────────────────────────────────────

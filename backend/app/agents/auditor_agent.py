@@ -1,8 +1,12 @@
 import json
 import os
 
+from dotenv import load_dotenv
+
 from app.core.response_models import AgentResponse, AgentFinding, AgentWarning
 
+
+load_dotenv()
 
 SEVERITY_ORDER = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
@@ -414,10 +418,15 @@ def _auditor_confidence(forecast_data, anomaly_data, risk_data, conflicts, uncer
     return round(float(min(max(confidence, 0.0), 1.0)), 2)
 
 
-def _gemini_summary(payload, fallback_summary):
+def _get_gemini_api_key():
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        return fallback_summary
+        raise ValueError("GEMINI_API_KEY environment variable not set")
+    return api_key
+
+
+def _gemini_summary(payload, fallback_summary):
+    api_key = _get_gemini_api_key()
 
     try:
         import google.generativeai as genai
@@ -436,8 +445,7 @@ def _gemini_summary(payload, fallback_summary):
         response = model.generate_content(prompt)
         text = response.text.strip()
         return text or fallback_summary
-    except Exception as e:
-        print(f"GenAI Auditor Failed: {e}. Falling back to structured synthesis.")
+    except Exception:
         return fallback_summary
 
 

@@ -6,9 +6,9 @@ from loguru import logger
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///aicfo.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./aicfo.db")
 
-if not DATABASE_URL:
+if not os.getenv("DATABASE_URL"):
     logger.warning("DATABASE_URL is not set — defaulting to sqlite aicfo.db via docker-compose.\nTo use Neon Postgres, set DATABASE_URL to your Neon connection string.")
 else:
     if 'neon' in DATABASE_URL or DATABASE_URL.startswith('postgres') or 'postgresql' in DATABASE_URL:

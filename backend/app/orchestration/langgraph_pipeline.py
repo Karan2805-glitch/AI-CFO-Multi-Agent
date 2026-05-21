@@ -8,7 +8,7 @@ a foundation for future graph-native features (conditional edges, streaming).
 
 Design decisions:
 - FinancialOrchestrator remains the source of truth for execution.
-- LangGraph nodes delegate to orchestrator stage methods.
+- LangGraph delegates runtime execution to the orchestrator in one node.
 - Graph metadata (nodes, edges, topology) is exported for visualization.
 - Import is optional-safe: if langgraph is missing, the module raises a
   clear ImportError at import time rather than crashing FastAPI at startup.
@@ -16,9 +16,7 @@ Design decisions:
 
 from __future__ import annotations
 
-import asyncio
-import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # ---------------------------------------------------------------------------
 # Optional-safe import: fail loudly only when this module is imported,
@@ -93,95 +91,25 @@ def _build_langgraph_pipeline() -> Any:
 
     orchestrator = FinancialOrchestrator()
 
-    # --- Node functions: thin wrappers around orchestrator stage methods ---
+    # --- Runtime node: LangGraph wraps the orchestrator; it does not re-own execution. ---
 
-    async def foundation_node(state: FinancialAnalysisState) -> Dict[str, Any]:
-        """Stage 1: Validate preprocessing data and inject graph metadata."""
-        state.add_execution_event(
-            agent="foundation", event="started",
-            node="foundation", stage="stage_1_foundation",
-        )
-        start = time.perf_counter()
-
-        if not state.preprocessing:
-            state.mark_agent_failed(
-                "foundation", "Missing preprocessing data",
-                node="foundation", stage="stage_1_foundation",
-            )
-            return state.model_dump()
-
-        # Inject visualization metadata into state
+    async def orchestrator_runtime_node(
+        state: FinancialAnalysisState,
+    ) -> FinancialAnalysisState:
+        """Run the canonical orchestrator and return the shared state object."""
         state.preprocessing["graph_snapshot"] = export_graph_metadata()
-
-        duration_ms = (time.perf_counter() - start) * 1000.0
-        state.mark_agent_completed(
-            "foundation", details={"duration_ms": duration_ms},
-            node="foundation", stage="stage_1_foundation",
-        )
-        return state.model_dump()
-
-    async def forecast_node(state: FinancialAnalysisState) -> Dict[str, Any]:
-        """Stage 2 fan-out: Forecast agent — writes only state.forecast."""
-        await orchestrator.run_forecast_agent(state)
-        return state.model_dump()
-
-    async def anomaly_node(state: FinancialAnalysisState) -> Dict[str, Any]:
-        """Stage 2 fan-out: Anomaly agent — writes only state.anomalies."""
-        await orchestrator.run_anomaly_agent(state)
-        return state.model_dump()
-
-    async def health_node(state: FinancialAnalysisState) -> Dict[str, Any]:
-        """Stage 2 fan-out: Health agent — writes only state.health."""
-        await orchestrator.run_health_agent(state)
-        return state.model_dump()
-
-    async def risk_node(state: FinancialAnalysisState) -> Dict[str, Any]:
-        """Stage 3 synthesis: Risk agent — reads fan-out outputs."""
-        await orchestrator.run_risk_agent(state)
-        return state.model_dump()
-
-    async def recommendation_node(state: FinancialAnalysisState) -> Dict[str, Any]:
-        """Stage 3 synthesis: Recommendation agent — reads risk output."""
-        await orchestrator.run_recommendation_agent(state)
-        return state.model_dump()
-
-    async def auditor_node(state: FinancialAnalysisState) -> Dict[str, Any]:
-        """Stage 4 executive synthesis: Auditor agent — reads all outputs."""
-        await orchestrator.run_auditor_agent(state)
-        return state.model_dump()
+        return await orchestrator.run_pipeline(state)
 
     # --- Build graph ---
     graph = StateGraph(FinancialAnalysisState)
 
-    graph.add_node("foundation", foundation_node)
-    graph.add_node("forecast", forecast_node)
-    graph.add_node("anomaly", anomaly_node)
-    graph.add_node("health", health_node)
-    graph.add_node("risk", risk_node)
-    graph.add_node("recommendation", recommendation_node)
-    graph.add_node("auditor", auditor_node)
+    graph.add_node("orchestrator_runtime", orchestrator_runtime_node)
 
     # Entry point
-    graph.set_entry_point("foundation")
-
-    # Stage 1 -> Stage 2 fan-out
-    graph.add_edge("foundation", "forecast")
-    graph.add_edge("foundation", "anomaly")
-    graph.add_edge("foundation", "health")
-
-    # Stage 2 -> Stage 3 fan-in
-    graph.add_edge("forecast", "risk")
-    graph.add_edge("anomaly", "risk")
-    graph.add_edge("health", "risk")
-
-    # Stage 3 sequential
-    graph.add_edge("risk", "recommendation")
-
-    # Stage 3 -> Stage 4
-    graph.add_edge("recommendation", "auditor")
+    graph.set_entry_point("orchestrator_runtime")
 
     # Terminal
-    graph.add_edge("auditor", END)
+    graph.add_edge("orchestrator_runtime", END)
 
     return graph.compile()
 

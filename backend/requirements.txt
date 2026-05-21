@@ -23,7 +23,7 @@ loguru==0.7.2
 
 # ─── LangGraph Orchestration (optional layer) ───
 langgraph==0.2.0
-langchain-core>=0.2.27
+langchain-core==0.2.27
 
 # ─── Auth helpers ───
 python-jose[cryptography]>=3.3.0
