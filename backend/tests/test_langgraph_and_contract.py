@@ -4,6 +4,7 @@ and health_score DB extraction logic.
 """
 
 import asyncio
+import pytest
 import pandas as pd
 
 from app.core.state import FinancialAnalysisState
@@ -11,6 +12,7 @@ from app.services.analysis_service import analyze
 from app.services.preprocessing import preprocess
 from app.services.kpi_service import calculate_kpis
 from app.services.ratio_service import calculate_ratios
+from app.orchestration.langgraph_pipeline import LANGGRAPH_AVAILABLE, langgraph_app
 
 
 def _sample_df():
@@ -87,10 +89,12 @@ def test_langgraph_stage_map_correctness():
     assert STAGE_MAP["auditor"] == "stage_4_executive_synthesis"
 
 
+@pytest.mark.skipif(
+    not LANGGRAPH_AVAILABLE or langgraph_app is None,
+    reason="LangGraph runtime not available (missing langgraph package or compile failed)",
+)
 def test_langgraph_runtime_wrapper_executes_orchestrator():
     """The compiled LangGraph wrapper should delegate to FinancialOrchestrator."""
-    from app.orchestration.langgraph_pipeline import langgraph_app
-
     processed_df = preprocess(_sample_df())
     kpis = calculate_kpis(processed_df)
     state = FinancialAnalysisState(
