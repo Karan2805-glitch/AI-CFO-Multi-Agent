@@ -1,7 +1,9 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Query
-from sqlalchemy.orm import Session
-import pandas as pd
 import io
+
+import pandas as pd
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.concurrency import run_in_threadpool
+from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import AnalysisRun, Session as SessionModel
@@ -17,26 +19,23 @@ def compress_result(result: dict):
         "health_score": result.get("health_score"),
         "forecast": result.get("forecast"),
         "anomalies": result.get("anomalies", []),
-
         "recommendations": {
             "recommendations": result.get("recommendations", {}).get("recommendations", [])
         },
-
         "auditor": result.get("auditor", {})
     }
 
 
-@router.post("/analyze")
+@router.post("")
 async def analyze_csv(
     session_id: str = Query(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-
     session_id = session_id.strip()
 
-    # Validate session
-    session = db.query(SessionModel).filter_by(id=session_id).first()
+    # DB query off the event loop.
+    session = await run_in_threadpool(lambda: db.query(SessionModel).filter_by(id=session_id).first())
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
@@ -45,13 +44,13 @@ async def analyze_csv(
 
     try:
         contents = await file.read()
-        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+
+        # CSV parse off the event loop.
+        df = await run_in_threadpool(lambda: pd.read_csv(io.StringIO(contents.decode("utf-8"))))
 
         result = await analyze(df)
         compressed = compress_result(result)
 
-        # Extract integer health score from the health payload dict.
-        # The DB column is Integer, so we must not store the raw dict.
         raw_health = compressed.get("health_score", {})
         if isinstance(raw_health, dict):
             health_score = int(raw_health.get("overall_score", raw_health.get("score", 0)))
@@ -67,16 +66,18 @@ async def analyze_csv(
             result=compressed
         )
 
-        db.add(run)
-        db.commit()
-        db.refresh(run)
+        # DB write off the event loop.
+        def _persist():
+            db.add(run)
+            db.commit()
+            db.refresh(run)
 
-        # 🔹 RETURN ONLY SUMMARY (optimized)
+        await run_in_threadpool(_persist)
+
         return {
             "status": "success",
             "run_id": run.id,
             "session_id": session_id,
-
             "summary": {
                 "health_score": health_score,
                 "risk_level": risk_level,
@@ -85,6 +86,8 @@ async def analyze_csv(
             }
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
-        db.rollback()
+        await run_in_threadpool(db.rollback)
         raise HTTPException(status_code=500, detail=str(e))
