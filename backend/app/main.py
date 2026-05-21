@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes import analyze, session, results, runs, auth, report
+from app.db import engine, Base
+
+# Create tables on startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AI CFO Backend")
 

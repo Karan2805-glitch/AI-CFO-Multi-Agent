@@ -15,6 +15,7 @@ import AnomalySeverityPanel from '../components/executive/AnomalySeverityPanel';
 import AIChatbot from '../components/AIChatbot';
 import { useData } from '../context/DataContext';
 import { useAnalysis } from '../hooks/useAnalysis';
+import { getReportUrl } from '../api/analyzeService';
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -100,7 +101,13 @@ export default function Dashboard() {
             <ConfidenceBadge value={analysis.overallConfidence} />
           )}
           <button
-            onClick={() => window.print()}
+            onClick={() => {
+              if (runId) {
+                window.open(getReportUrl(runId), '_blank');
+              } else {
+                window.print();
+              }
+            }}
             className="print-hide flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 hover:scale-[1.02]"
             style={{
               background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15))',
@@ -109,7 +116,7 @@ export default function Dashboard() {
             }}
           >
             <FileText size={14} />
-            Generate Report
+            Generate PDF Report
           </button>
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold tracking-wide uppercase shadow-[0_0_15px_rgba(16,185,129,0.15)] print-hide">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />

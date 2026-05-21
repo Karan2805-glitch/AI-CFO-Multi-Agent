@@ -65,6 +65,10 @@ export const fetchAgentResult = async (runId, agentName) => {
   return parseJson(response);
 };
 
+export const getReportUrl = (runId) => {
+  return `${API_BASE}/report/generate/${encodeURIComponent(runId)}`;
+};
+
 export const runDashboardFlow = async ({ file, sessionPayload, onStep }) => {
   onStep?.(0);
   const sessionRes = await startSession(sessionPayload);
