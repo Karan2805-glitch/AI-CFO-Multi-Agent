@@ -4,3 +4,4 @@ from .results import router as results
 from .runs import router as runs
 from .auth import router as auth
 from .report import router as report
+from .chat import router as chat

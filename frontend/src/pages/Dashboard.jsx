@@ -302,7 +302,7 @@ export default function Dashboard() {
        * AI ASSISTANT
        * ═══════════════════════════════════════════════════════════════ */}
       <section className="mt-2 print-hide">
-        <AIChatbot />
+        <AIChatbot runId={runId} />
       </section>
 
       {/* ── FOOTER TRACE ─────────────────────────────────────────── */}

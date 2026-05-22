@@ -74,6 +74,15 @@ export const downloadReport = async (runId) => {
   return response.blob();
 };
 
+export const askChatbot = async (message, runId = null, history = []) => {
+  const response = await fetch(`${API_BASE}/chat/message`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, run_id: runId, history }),
+  });
+  return parseJson(response);
+};
+
 export const runDashboardFlow = async ({ file, sessionPayload, onStep }) => {
   onStep?.(0);
   const sessionRes = await startSession(sessionPayload);
@@ -94,3 +103,4 @@ export const runDashboardFlow = async ({ file, sessionPayload, onStep }) => {
   saveDashboardState(state);
   return state;
 };
+
