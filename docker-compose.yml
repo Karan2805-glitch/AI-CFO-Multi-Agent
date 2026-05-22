@@ -29,8 +29,7 @@ services:
     build: 
       context: ./backend
     environment:
-      # Use in-memory SQLite for fast, isolated tests (no real DB needed)
-      - DATABASE_URL=sqlite:///:memory:
+      - "DATABASE_URL=sqlite:///:memory:"
     command: ["pytest", "--cov=app", "--cov-report=xml"]
 
   frontend-tests:
