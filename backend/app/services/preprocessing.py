@@ -34,6 +34,9 @@ def preprocess(df: pd.DataFrame):
         df = df.sort_values(by="months")
         df.set_index("months", inplace=True)
         
+        # Set day to 1 to normalize Month End/other dates to Month Start for robust reindexing
+        df.index = df.index.map(lambda x: x.replace(day=1))
+        
         # Build consecutive monthly timeline
         full_range = pd.date_range(start=df.index.min(), end=df.index.max(), freq="MS")
         if len(full_range) > len(df):

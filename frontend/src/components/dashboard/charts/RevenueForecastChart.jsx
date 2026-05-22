@@ -6,10 +6,13 @@ import {
 import { TrendingUp } from 'lucide-react';
 
 const fmt = (v) => {
-  if (typeof v !== 'number') return 'N/A';
-  if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
-  if (Math.abs(v) >= 1_000)     return `$${(v / 1_000).toFixed(1)}k`;
-  return `$${v}`;
+  if (typeof v !== 'number' || Number.isNaN(v)) return 'N/A';
+  const abs = Math.abs(v);
+  if (abs >= 1_000_000_000_000) return `$${(v / 1_000_000_000_000).toFixed(2)}T`;
+  if (abs >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(2)}B`;
+  if (abs >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000)     return `$${(v / 1_000).toFixed(1)}k`;
+  return `$${v.toLocaleString()}`;
 };
 
 const buildData = (revenueTrend, forecast, expenseTrend) => {

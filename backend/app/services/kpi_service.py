@@ -3,8 +3,10 @@ from app.services.preprocessing import preprocess
 def calculate_total_revenue(df):
     return df["revenue"].sum()
 
+IGNORED_EXPENSE_COLS = ["months", "revenue", "total_expenses", "net_profit", "archetype", "profit", "margin", "health_score", "risk_level"]
+
 def calculate_total_expenses(df):
-    expense_cols = df.columns.drop(["months", "revenue"])
+    expense_cols = [c for c in df.columns if c not in IGNORED_EXPENSE_COLS]
     return df[expense_cols].sum().sum()
 
 def calculate_profit(total_revenue, total_expenses):
@@ -19,7 +21,7 @@ def calculate_avg_revenue(df):
     return df["revenue"].mean()
 
 def calculate_expense_breakdown(df):
-    expense_cols = df.columns.drop(["months", "revenue"])
+    expense_cols = [c for c in df.columns if c not in IGNORED_EXPENSE_COLS]
     return df[expense_cols].sum().to_dict()
 
 def calculate_kpis(df):
