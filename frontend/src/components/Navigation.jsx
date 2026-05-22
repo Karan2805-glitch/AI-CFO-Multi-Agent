@@ -21,24 +21,26 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
   const { theme, toggleTheme } = useTheme();
   const isMidnight = theme === 'midnight';
   
-  const { setDashboardState, setLoading } = useData();
+  const { setDashboardState, setLoading, sessionId, runId } = useData();
   const [runs, setRuns] = useState([]);
 
   useEffect(() => {
-    const raw = localStorage.getItem('aicfo_dashboard_state');
-    if (raw) {
+    const loadRuns = async () => {
+      if (!sessionId) {
+        setRuns([]);
+        return;
+      }
+
       try {
-        const local = JSON.parse(raw);
-        if (local.sessionId) {
-          fetchRuns(local.sessionId)
-            .then(res => setRuns(res.runs || []))
-            .catch(() => setRuns([]));
-        }
-      } catch (e) {
+        const res = await fetchRuns(sessionId);
+        setRuns(res.runs || []);
+      } catch {
         setRuns([]);
       }
-    }
-  }, []);
+    };
+
+    loadRuns();
+  }, [sessionId, runId]);
 
   const handleRunClick = async (runId) => {
     setLoading(true);
@@ -55,8 +57,8 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
         localStorage.setItem('aicfo_dashboard_state', JSON.stringify(local));
       }
       if (loc.pathname === '/upload') nav('/dashboard');
-    } catch(e) { 
-      console.error(e);
+    } catch (error) { 
+      console.error(error);
     }
     setLoading(false);
   };
@@ -76,7 +78,7 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
 
       {/* Nav links */}
       <nav className="px-3 py-5 flex flex-col gap-1">
-        {navItems.map(({ to, icon: Icon, label, active, ring }) => {
+        {navItems.map(({ to, icon, label, active, ring }) => {
           const isActive = loc.pathname === to || (to !== '/upload' && loc.pathname.startsWith(to));
           return (
             <NavLink
@@ -94,7 +96,7 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                 }`}
             >
-              <Icon size={17} className="shrink-0" />
+              {React.createElement(icon, { size: 17, className: 'shrink-0' })}
               <span className="flex-1">{label}</span>
               {isActive && <ChevronRight size={14} className="opacity-60" />}
             </NavLink>
