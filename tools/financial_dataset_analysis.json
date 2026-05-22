@@ -1,293 +1,6 @@
 {
-  "root": "D:\\Financial_Projects",
+  "root": "tools",
   "datasets": [
-    {
-      "dataset": "checking_account_main.csv",
-      "rows": 877,
-      "columns": [
-        "amount",
-        "balance",
-        "category",
-        "description",
-        "months",
-        "transaction_id",
-        "type"
-      ],
-      "schema_similarity": 20.0,
-      "revenue_start": 0.0,
-      "revenue_end": 0.0,
-      "revenue_growth_pct": 0.0,
-      "profit_margin_pct": 0.0,
-      "expense_ratio_pct": 0.0,
-      "archetype_scores": {
-        "growing": 5.0,
-        "in_loss": 5.0,
-        "profit_making": 5.0
-      },
-      "best_fit": "Growing",
-      "confidence_gap": 0.0,
-      "forecast": [
-        {
-          "months": "2024-01-28",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "2024-02-28",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "2024-03-28",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        }
-      ]
-    },
-    {
-      "dataset": "checking_account_secondary.csv",
-      "rows": 48,
-      "columns": [
-        "amount",
-        "balance",
-        "category",
-        "description",
-        "months",
-        "transaction_id",
-        "type"
-      ],
-      "schema_similarity": 20.0,
-      "revenue_start": 0.0,
-      "revenue_end": 0.0,
-      "revenue_growth_pct": 0.0,
-      "profit_margin_pct": 0.0,
-      "expense_ratio_pct": 0.0,
-      "archetype_scores": {
-        "growing": 5.0,
-        "in_loss": 5.0,
-        "profit_making": 5.0
-      },
-      "best_fit": "Growing",
-      "confidence_gap": 0.0,
-      "forecast": [
-        {
-          "months": "2024-01-15",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "2024-02-15",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "2024-03-15",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        }
-      ]
-    },
-    {
-      "dataset": "credit_card_account.csv",
-      "rows": 133,
-      "columns": [
-        "amount",
-        "balance",
-        "category",
-        "months",
-        "transaction_id",
-        "type",
-        "vendor"
-      ],
-      "schema_similarity": 20.0,
-      "revenue_start": 0.0,
-      "revenue_end": 0.0,
-      "revenue_growth_pct": 0.0,
-      "profit_margin_pct": 0.0,
-      "expense_ratio_pct": 0.0,
-      "archetype_scores": {
-        "growing": 5.0,
-        "in_loss": 5.0,
-        "profit_making": 5.0
-      },
-      "best_fit": "Growing",
-      "confidence_gap": 0.0,
-      "forecast": [
-        {
-          "months": "2024-01-06",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "2024-01-13",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "2024-01-20",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        }
-      ]
-    },
-    {
-      "dataset": "gusto_payroll.csv",
-      "rows": 92,
-      "columns": [
-        "account",
-        "amount",
-        "employee_id",
-        "employee_name",
-        "months",
-        "pay_date",
-        "role",
-        "type"
-      ],
-      "schema_similarity": 20.0,
-      "revenue_start": 0.0,
-      "revenue_end": 0.0,
-      "revenue_growth_pct": 0.0,
-      "profit_margin_pct": 0.0,
-      "expense_ratio_pct": 0.0,
-      "archetype_scores": {
-        "growing": 5.0,
-        "in_loss": 5.0,
-        "profit_making": 5.0
-      },
-      "best_fit": "Growing",
-      "confidence_gap": 0.0,
-      "forecast": [
-        {
-          "months": "P1",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "P2",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "P3",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        }
-      ]
-    },
-    {
-      "dataset": "gusto_payroll_bc.csv",
-      "rows": 266,
-      "columns": [
-        "cpp",
-        "ei",
-        "employee_id",
-        "employee_name",
-        "employer_cpp",
-        "employer_ei",
-        "federal_tax",
-        "gross_pay",
-        "months",
-        "net_pay",
-        "other_deductions",
-        "pay_date",
-        "provincial_tax",
-        "role",
-        "tips",
-        "travel_reimbursement"
-      ],
-      "schema_similarity": 20.0,
-      "revenue_start": 0.0,
-      "revenue_end": 0.0,
-      "revenue_growth_pct": 0.0,
-      "profit_margin_pct": 0.0,
-      "expense_ratio_pct": 0.0,
-      "archetype_scores": {
-        "growing": 5.0,
-        "in_loss": 5.0,
-        "profit_making": 5.0
-      },
-      "best_fit": "Growing",
-      "confidence_gap": 0.0,
-      "forecast": [
-        {
-          "months": "P1",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "P2",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        },
-        {
-          "months": "P3",
-          "revenue": 0.0,
-          "expenses": 0.0,
-          "net_profit": 0.0
-        }
-      ]
-    },
-    {
-      "dataset": "High_Profit_SME_Monthly.csv",
-      "rows": 104,
-      "columns": [
-        "marketing",
-        "months",
-        "other",
-        "rent",
-        "revenue",
-        "salaries",
-        "subscriptions",
-        "utilities"
-      ],
-      "schema_similarity": 100.0,
-      "revenue_start": 381743.57,
-      "revenue_end": 1272875.67,
-      "revenue_growth_pct": 233.44,
-      "profit_margin_pct": 10.8,
-      "expense_ratio_pct": 89.2,
-      "archetype_scores": {
-        "growing": 64.78,
-        "in_loss": 13.12,
-        "profit_making": 67.22
-      },
-      "best_fit": "Profit Making",
-      "confidence_gap": 2.44,
-      "forecast": [
-        {
-          "months": "2026-12-08",
-          "revenue": 1303652.03,
-          "expenses": 1014208.25,
-          "net_profit": 289443.78
-        },
-        {
-          "months": "2026-12-15",
-          "revenue": 1326421.15,
-          "expenses": 1028394.56,
-          "net_profit": 298026.59
-        },
-        {
-          "months": "2026-12-22",
-          "revenue": 1347381.48,
-          "expenses": 1043462.23,
-          "net_profit": 303919.25
-        }
-      ]
-    },
     {
       "dataset": "High_Risk_full_dataset.csv",
       "rows": 104,
@@ -332,147 +45,6 @@
           "revenue": 209754.21,
           "expenses": 286632.57,
           "net_profit": -76878.36
-        }
-      ]
-    },
-    {
-      "dataset": "Low_Risk_full_dataset.csv",
-      "rows": 104,
-      "columns": [
-        "marketing",
-        "months",
-        "other",
-        "rent",
-        "revenue",
-        "salaries",
-        "subscriptions",
-        "utilities"
-      ],
-      "schema_similarity": 100.0,
-      "revenue_start": 702812.58,
-      "revenue_end": 210759.67,
-      "revenue_growth_pct": -70.01,
-      "profit_margin_pct": -15.01,
-      "expense_ratio_pct": 115.01,
-      "archetype_scores": {
-        "growing": 22.92,
-        "in_loss": 60.67,
-        "profit_making": 40.81
-      },
-      "best_fit": "In Loss",
-      "confidence_gap": 19.86,
-      "forecast": [
-        {
-          "months": "2026-12-08",
-          "revenue": 210424.45,
-          "expenses": 283266.28,
-          "net_profit": -72841.83
-        },
-        {
-          "months": "2026-12-15",
-          "revenue": 209305.64,
-          "expenses": 283229.55,
-          "net_profit": -73923.9
-        },
-        {
-          "months": "2026-12-22",
-          "revenue": 206779.01,
-          "expenses": 282566.91,
-          "net_profit": -75787.9
-        }
-      ]
-    },
-    {
-      "dataset": "Medium_Risk_full_dataset.csv",
-      "rows": 104,
-      "columns": [
-        "marketing",
-        "months",
-        "other",
-        "rent",
-        "revenue",
-        "salaries",
-        "subscriptions",
-        "utilities"
-      ],
-      "schema_similarity": 100.0,
-      "revenue_start": 702812.58,
-      "revenue_end": 210759.67,
-      "revenue_growth_pct": -70.01,
-      "profit_margin_pct": -15.01,
-      "expense_ratio_pct": 115.01,
-      "archetype_scores": {
-        "growing": 22.92,
-        "in_loss": 60.67,
-        "profit_making": 40.81
-      },
-      "best_fit": "In Loss",
-      "confidence_gap": 19.86,
-      "forecast": [
-        {
-          "months": "2026-12-08",
-          "revenue": 210424.45,
-          "expenses": 283266.28,
-          "net_profit": -72841.83
-        },
-        {
-          "months": "2026-12-15",
-          "revenue": 209305.64,
-          "expenses": 283229.55,
-          "net_profit": -73923.9
-        },
-        {
-          "months": "2026-12-22",
-          "revenue": 206779.01,
-          "expenses": 282566.91,
-          "net_profit": -75787.9
-        }
-      ]
-    },
-    {
-      "dataset": "Moderate_Profit_SME_Monthly.csv",
-      "rows": 104,
-      "columns": [
-        "marketing",
-        "months",
-        "other",
-        "rent",
-        "revenue",
-        "salaries",
-        "subscriptions",
-        "utilities"
-      ],
-      "schema_similarity": 100.0,
-      "revenue_start": 381743.57,
-      "revenue_end": 1272875.67,
-      "revenue_growth_pct": 233.44,
-      "profit_margin_pct": 10.8,
-      "expense_ratio_pct": 89.2,
-      "archetype_scores": {
-        "growing": 64.78,
-        "in_loss": 13.12,
-        "profit_making": 67.22
-      },
-      "best_fit": "Profit Making",
-      "confidence_gap": 2.44,
-      "forecast": [
-        {
-          "months": "2026-12-08",
-          "revenue": 1303652.03,
-          "expenses": 1014208.25,
-          "net_profit": 289443.78
-        },
-        {
-          "months": "2026-12-15",
-          "revenue": 1326421.15,
-          "expenses": 1028394.56,
-          "net_profit": 298026.59
-        },
-        {
-          "months": "2026-12-22",
-          "revenue": 1347381.48,
-          "expenses": 1043462.23,
-          "net_profit": 303919.25
         }
       ]
     },
@@ -571,7 +143,7 @@
       ]
     },
     {
-      "dataset": "SME_JCurve_Millions_dataset.csv",
+      "dataset": "High_Risk_full_dataset__in_loss.csv",
       "rows": 104,
       "columns": [
         "marketing",
@@ -584,69 +156,172 @@
         "utilities"
       ],
       "schema_similarity": 100.0,
-      "revenue_start": 872179.85,
-      "revenue_end": 1069524.0,
-      "revenue_growth_pct": 22.63,
+      "revenue_start": 669255.71,
+      "revenue_end": 199850.64,
+      "revenue_growth_pct": -70.14,
+      "profit_margin_pct": -15.06,
+      "expense_ratio_pct": 115.06,
+      "archetype_scores": {
+        "growing": 22.42,
+        "in_loss": 60.74,
+        "profit_making": 40.23
+      },
+      "best_fit": "In Loss",
+      "confidence_gap": 20.51,
+      "forecast": [
+        {
+          "months": "2027-01-19",
+          "revenue": 199052.19,
+          "expenses": 268604.26,
+          "net_profit": -69552.07
+        },
+        {
+          "months": "2027-01-26",
+          "revenue": 197516.97,
+          "expenses": 268569.43,
+          "net_profit": -71052.45
+        },
+        {
+          "months": "2027-02-02",
+          "revenue": 194662.67,
+          "expenses": 267941.09,
+          "net_profit": -73278.43
+        }
+      ]
+    },
+    {
+      "dataset": "Practical_SME_Quarterly_Avg__growing.csv",
+      "rows": 104,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 368630.91,
+      "revenue_end": 1227258.2,
+      "revenue_growth_pct": 232.92,
+      "profit_margin_pct": 10.82,
+      "expense_ratio_pct": 89.18,
+      "archetype_scores": {
+        "growing": 63.82,
+        "in_loss": 13.11,
+        "profit_making": 66.68
+      },
+      "best_fit": "Profit Making",
+      "confidence_gap": 2.86,
+      "forecast": [
+        {
+          "months": "2027-02-18",
+          "revenue": 1242318.33,
+          "expenses": 965988.8,
+          "net_profit": 276329.53
+        },
+        {
+          "months": "2027-02-25",
+          "revenue": 1249745.26,
+          "expenses": 967889.64,
+          "net_profit": 281855.62
+        },
+        {
+          "months": "2027-03-04",
+          "revenue": 1255568.59,
+          "expenses": 970700.48,
+          "net_profit": 284868.11
+        }
+      ]
+    },
+    {
+      "dataset": "Realistic_JCurve_Growth_dataset__profit_making.csv",
+      "rows": 104,
+      "columns": [
+        "marketing",
+        "months",
+        "other",
+        "rent",
+        "revenue",
+        "salaries",
+        "subscriptions",
+        "utilities"
+      ],
+      "schema_similarity": 100.0,
+      "revenue_start": 830536.28,
+      "revenue_end": 1014164.88,
+      "revenue_growth_pct": 22.11,
       "profit_margin_pct": 26.52,
       "expense_ratio_pct": 73.48,
       "archetype_scores": {
-        "growing": 51.03,
-        "in_loss": 14.5,
-        "profit_making": 67.09
+        "growing": 49.54,
+        "in_loss": 14.69,
+        "profit_making": 66.01
       },
       "best_fit": "Profit Making",
-      "confidence_gap": 16.06,
+      "confidence_gap": 16.47,
       "forecast": [
         {
-          "months": "2026-12-08",
-          "revenue": 1088190.47,
-          "expenses": 794207.99,
-          "net_profit": 293982.48
+          "months": "2027-01-19",
+          "revenue": 1027721.89,
+          "expenses": 750071.86,
+          "net_profit": 277650.03
         },
         {
-          "months": "2026-12-15",
-          "revenue": 1100171.77,
-          "expenses": 802044.89,
-          "net_profit": 298126.88
+          "months": "2027-01-26",
+          "revenue": 1034964.46,
+          "expenses": 754499.85,
+          "net_profit": 280464.6
         },
         {
-          "months": "2026-12-22",
-          "revenue": 1110702.35,
-          "expenses": 810591.85,
-          "net_profit": 300110.5
+          "months": "2027-02-02",
+          "revenue": 1040871.18,
+          "expenses": 759616.51,
+          "net_profit": 281254.68
         }
       ]
     }
   ],
   "best_base_datasets": {
-    "growing": "High_Profit_SME_Monthly.csv",
-    "in_loss": "High_Risk_full_dataset.csv",
-    "profit_making": "High_Profit_SME_Monthly.csv"
+    "Growing": "Practical_SME_Quarterly_Avg__growing.csv",
+    "In Loss": "High_Risk_full_dataset.csv",
+    "Profit Making": "Realistic_JCurve_Growth_dataset.csv"
   },
   "archetype_exports": [
     {
       "archetype": "Growing",
       "source_dataset": "Practical_SME_Quarterly_Avg.csv",
-      "export_path": "D:\\Projects\\AI-CFO-Multi-Agent\\tools\\scenario_exports\\Practical_SME_Quarterly_Avg__growing.csv",
+      "export_path": "tools\\scenario_exports\\Practical_SME_Quarterly_Avg__growing.csv",
       "status": "written",
-      "rows_written": 107,
-      "future_rows": 3
+      "rows_written": 12,
+      "history_rows": 9,
+      "future_rows": 3,
+      "forecast_share_pct": 25.0
     },
     {
       "archetype": "In Loss",
       "source_dataset": "High_Risk_full_dataset.csv",
-      "export_path": "D:\\Projects\\AI-CFO-Multi-Agent\\tools\\scenario_exports\\High_Risk_full_dataset__in_loss.csv",
+      "export_path": "tools\\scenario_exports\\High_Risk_full_dataset__in_loss.csv",
       "status": "written",
-      "rows_written": 107,
-      "future_rows": 3
+      "rows_written": 12,
+      "history_rows": 9,
+      "future_rows": 3,
+      "forecast_share_pct": 25.0
     },
     {
       "archetype": "Profit Making",
       "source_dataset": "Realistic_JCurve_Growth_dataset.csv",
-      "export_path": "D:\\Projects\\AI-CFO-Multi-Agent\\tools\\scenario_exports\\Realistic_JCurve_Growth_dataset__profit_making.csv",
+      "export_path": "tools\\scenario_exports\\Realistic_JCurve_Growth_dataset__profit_making.csv",
       "status": "written",
-      "rows_written": 107,
-      "future_rows": 3
+      "rows_written": 12,
+      "history_rows": 9,
+      "future_rows": 3,
+      "forecast_share_pct": 25.0
     }
-  ]
+  ],
+  "frontend_forecast_share_pct": 25.0,
+  "frontend_history_rows": 9,
+  "frontend_forecast_rows": 3
 }
