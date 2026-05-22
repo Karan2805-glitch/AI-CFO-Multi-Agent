@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import analyze, session, results, runs, auth, report
+from app.routes import analyze, session, results, runs, auth, report, chat
 from app.db import engine, Base
 
 # Create tables on startup
@@ -24,6 +24,7 @@ app.include_router(results, prefix="/results")
 app.include_router(runs, prefix="/runs")
 app.include_router(auth, prefix="/auth")
 app.include_router(report, prefix="/report")
+app.include_router(chat, prefix="/chat")
 
 @app.get("/")
 def root():

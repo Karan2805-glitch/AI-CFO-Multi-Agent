@@ -4,8 +4,11 @@ import { TrendingUp, TrendingDown, DollarSign, BarChart2, Activity, CreditCard, 
 const formatValue = (value, currency = true, suffix = '') => {
   if (typeof value !== 'number' || Number.isNaN(value)) return 'N/A';
   if (!currency) return `${value.toFixed(value % 1 !== 0 ? 1 : 0)}${suffix}`;
-  if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (Math.abs(value) >= 1_000) return `$${(value / 1_000).toFixed(1)}k`;
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000_000_000) return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
+  if (abs >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
+  if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000) return `$${(value / 1_000).toFixed(1)}k`;
   return `$${value.toLocaleString()}`;
 };
 

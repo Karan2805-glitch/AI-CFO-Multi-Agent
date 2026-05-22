@@ -29,6 +29,6 @@ describe('Dashboard Page', () => {
     );
     
     // Simple checks to ensure it renders main sections
-    expect(screen.getByText(/Executive Dashboard/i)).toBeInTheDocument();
+    expect(screen.getByText(/AI-CFO Command Center/i)).toBeInTheDocument();
   });
 });

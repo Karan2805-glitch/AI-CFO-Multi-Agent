@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
 const STORAGE_KEY = 'aicfo_dashboard_state';
 
 const parseJson = async (response) => {
@@ -69,6 +69,24 @@ export const getReportUrl = (runId) => {
   return `${API_BASE}/report/generate/${encodeURIComponent(runId)}`;
 };
 
+export const downloadReport = async (runId) => {
+  const response = await fetch(`${API_BASE}/report/generate/${encodeURIComponent(runId)}`);
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.detail || `Failed to generate report (${response.status})`);
+  }
+  return response.blob();
+};
+
+export const askChatbot = async (message, runId = null, history = []) => {
+  const response = await fetch(`${API_BASE}/chat/message`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, run_id: runId, history }),
+  });
+  return parseJson(response);
+};
+
 export const runDashboardFlow = async ({ file, sessionPayload, onStep }) => {
   onStep?.(0);
   const sessionRes = await startSession(sessionPayload);
@@ -89,3 +107,4 @@ export const runDashboardFlow = async ({ file, sessionPayload, onStep }) => {
   saveDashboardState(state);
   return state;
 };
+

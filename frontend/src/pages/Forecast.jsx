@@ -218,16 +218,17 @@ const ScenarioAnalysis = ({ scenarioData }) => (
 // ── Forecast Page ─────────────────────────────────────────────────────────────
 const Forecast = () => {
   const {
-    forecastData, anomalyAlerts, recommendations,
-    healthScore, scenarioData, risk, auditorExplanation, isReal
+    revenueTrend,
+    expenseTrend,
+    forecastTrend,
+    anomalyAlerts,
+    recommendations,
+    healthScore,
+    scenarioData,
+    risk,
+    auditorExplanation,
+    isReal
   } = useAnalysis();
-
-  const { dashboardData } = useData();
-  const safeArray = (v) => Array.isArray(v) ? v : [];
-  
-  const revenueTrend = safeArray(dashboardData?.charts?.revenue_trend);
-  const expenseTrend = safeArray(dashboardData?.charts?.expense_trend);
-  const forecast = safeArray(dashboardData?.charts?.forecast);
 
   return (
     <div className="flex flex-col gap-8 pb-10 page-enter">
@@ -249,13 +250,13 @@ const Forecast = () => {
       <section className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <RevenueForecastChart 
           revenueTrend={revenueTrend} 
-          forecast={forecast} 
+          forecast={forecastTrend} 
           expenseTrend={expenseTrend}
         />
       </section>
 
       {/* ── RISK & AUDITOR ────────────────────────────────────────────── */}
-      {isReal && (risk || auditorExplanation) && (
+      {(risk || auditorExplanation) && (
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {risk && (
             <div 

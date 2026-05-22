@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, Sparkles, User, Loader2 } from 'lucide-react';
+import { askChatbot } from '../api/analyzeService';
 
 // ── Mock AI responses ─────────────────────────────────────────────────────────
 const AI_RESPONSES = {
@@ -97,7 +98,7 @@ const TypingIndicator = () => (
 );
 
 // ── AIChatbot Component ───────────────────────────────────────────────────────
-const AIChatbot = () => {
+const AIChatbot = ({ runId }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -114,10 +115,14 @@ const AIChatbot = () => {
 
   useEffect(() => {
     if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
+      if (typeof messagesContainerRef.current.scrollTo === 'function') {
+        messagesContainerRef.current.scrollTo({
+          top: messagesContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      } else {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }
     }
   }, [messages, isTyping]);
 
@@ -129,14 +134,26 @@ const AIChatbot = () => {
     if (!trimmed) return;
 
     const userMsg = { id: Date.now(), role: 'user', content: trimmed, time: getTime() };
+    const chatHistory = messages.map(m => ({ role: m.role, content: m.content }));
+
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI thinking delay
-    await new Promise(r => setTimeout(r, 900 + Math.random() * 700));
+    let aiContent = "";
+    try {
+      const res = await askChatbot(trimmed, runId, chatHistory);
+      if (res && res.reply) {
+        aiContent = res.reply;
+      } else {
+        throw new Error("Invalid reply format from live chatbot backend");
+      }
+    } catch (err) {
+      console.warn("Live chatbot failed, falling back to local simulation:", err);
+      await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+      aiContent = getAIResponse(trimmed);
+    }
 
-    const aiContent = getAIResponse(trimmed);
     const aiMsg = { id: Date.now() + 1, role: 'ai', content: aiContent, time: getTime() };
     setNewMsgId(aiMsg.id);
     setMessages(prev => [...prev, aiMsg]);
