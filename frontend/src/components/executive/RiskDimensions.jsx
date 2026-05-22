@@ -98,7 +98,7 @@ function RadarChart({ dimensions }) {
   });
 
   return (
-    <svg width="100%" height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="max-w-full mx-auto">
+    <svg width="100%" height={SIZE} viewBox="-25 -25 290 290" className="max-w-full mx-auto">
       {rings}
       {axes}
       <polygon points={polyPoints}
