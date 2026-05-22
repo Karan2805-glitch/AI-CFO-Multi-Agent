@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import Session as SessionModel
+from app.models import AnalysisRun, Session as SessionModel
 
 router = APIRouter()
 
@@ -28,6 +29,67 @@ def start_session(data: dict, db: Session = Depends(get_db)):
     return {
         "session_id": new_session.id,
         "username": new_session.username
+    }
+
+
+@router.get("/list")
+def list_sessions(username: str = Query(...), db: Session = Depends(get_db)):
+    """List all sessions for a given username, ordered by newest first."""
+
+    sessions = (
+        db.query(SessionModel)
+        .filter(SessionModel.username == username)
+        .order_by(SessionModel.created_at.desc())
+        .all()
+    )
+
+    result = []
+    for s in sessions:
+        run_count = (
+            db.query(func.count(AnalysisRun.id))
+            .filter(AnalysisRun.session_id == s.id)
+            .scalar()
+        )
+        result.append({
+            "session_id": s.id,
+            "username": s.username,
+            "company": s.company,
+            "industry": s.industry,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+            "run_count": run_count,
+        })
+
+    return {"sessions": result, "count": len(result)}
+
+
+@router.get("/list/runs")
+def list_all_runs(username: str = Query(...), db: Session = Depends(get_db)):
+    """List all runs across all sessions for a given username, newest first."""
+
+    session_ids = select(SessionModel.id).where(SessionModel.username == username)
+
+    runs = (
+        db.query(AnalysisRun)
+        .filter(AnalysisRun.session_id.in_(session_ids))
+        .order_by(AnalysisRun.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+    return {
+        "count": len(runs),
+        "runs": [
+            {
+                "run_id": r.id,
+                "session_id": r.session_id,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+                "health_score": r.health_score,
+                "risk_level": r.risk_level,
+                "revenue": r.result.get("kpi", {}).get("total_revenue") if r.result else None,
+                "profit": r.result.get("kpi", {}).get("profit") if r.result else None,
+            }
+            for r in runs
+        ],
     }
 
 

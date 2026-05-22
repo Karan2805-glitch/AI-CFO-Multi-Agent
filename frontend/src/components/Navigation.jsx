@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Wallet, BrainCircuit, Activity,
-  Upload, ChevronRight, Moon, Sparkles, LogOut, UserRound, Clock
+  Upload, ChevronRight, Moon, Sparkles, LogOut, UserRound, Clock, Loader2
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { clearDashboardState, fetchRuns, fetchResults } from '../api/analyzeService';
+import { clearDashboardState, fetchRuns, fetchAllUserRuns, fetchResults } from '../api/analyzeService';
 import { useData } from '../context/DataContext';
 
 const navItems = [
@@ -23,11 +23,32 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
   
   const { setDashboardState, setLoading, sessionId, runId } = useData();
   const [runs, setRuns] = useState([]);
+  const [loadingRuns, setLoadingRuns] = useState(false);
 
   useEffect(() => {
     const loadRuns = async () => {
+      setLoadingRuns(true);
+
+      // Strategy: Try fetching all runs for this user across all sessions.
+      // If the user has a name/email, use the cross-session endpoint.
+      // Fallback to session-scoped fetch if that fails or user info is unavailable.
+      const username = user?.name || user?.email;
+
+      if (username) {
+        try {
+          const res = await fetchAllUserRuns(username);
+          setRuns(res.runs || []);
+          setLoadingRuns(false);
+          return;
+        } catch (err) {
+          console.warn('Cross-session run fetch failed, falling back to session-scoped:', err);
+        }
+      }
+
+      // Fallback: session-scoped runs
       if (!sessionId) {
         setRuns([]);
+        setLoadingRuns(false);
         return;
       }
 
@@ -37,15 +58,16 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
       } catch {
         setRuns([]);
       }
+      setLoadingRuns(false);
     };
 
     loadRuns();
-  }, [sessionId, runId]);
+  }, [sessionId, runId, user]);
 
-  const handleRunClick = async (runId) => {
+  const handleRunClick = async (clickedRunId) => {
     setLoading(true);
     try {
-      const res = await fetchResults(runId);
+      const res = await fetchResults(clickedRunId);
       const dashboardData = res.data ?? res;
       setDashboardState({
         sessionId: dashboardData.session_id || sessionId,
@@ -104,29 +126,43 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
       <div className="flex-1 overflow-y-auto px-4 pb-4 hidden-scrollbar mt-2 border-t border-white/5 pt-4">
         <h4 className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">
           <Clock size={12} /> Run History
+          {loadingRuns && <Loader2 size={10} className="animate-spin text-blue-400" />}
         </h4>
         <div className="flex flex-col gap-2">
-          {runs.map((r, i) => (
-            <button
-              key={i}
-              onClick={() => handleRunClick(r.run_id)}
-              className="text-left px-3 py-2 rounded-lg bg-white/3 border border-white/5 hover:bg-white/10 transition-colors flex flex-col"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[12px] font-semibold text-slate-300">Run #{r.run_id.split('_')[1]?.substring(0,4)}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
-                  r.health_score > 70 ? 'bg-emerald-500/20 text-emerald-400' : 
-                  r.health_score > 40 ? 'bg-amber-500/20 text-amber-400' : 
-                  'bg-red-500/20 text-red-400'
-                }`}>Health: {r.health_score}</span>
-              </div>
-              <span className="text-[10px] text-slate-500 mt-1">
-                {r.created_at ? new Date(r.created_at).toLocaleDateString() : 'A moment ago'}
-              </span>
-            </button>
-          ))}
-          {runs.length === 0 && (
-            <p className="text-xs text-slate-500">No recent runs</p>
+          {runs.map((r) => {
+            const isActive = r.run_id === runId;
+            return (
+              <button
+                key={r.run_id}
+                onClick={() => handleRunClick(r.run_id)}
+                className={`text-left px-3 py-2 rounded-lg transition-all duration-200 flex flex-col ${
+                  isActive
+                    ? 'bg-blue-500/10 border border-blue-500/30 shadow-[0_0_12px_rgba(59,130,246,0.15)]'
+                    : 'bg-white/3 border border-white/5 hover:bg-white/10 hover:border-white/15'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className={`text-[12px] font-semibold ${isActive ? 'text-blue-300' : 'text-slate-300'}`}>
+                    Run #{r.run_id.split('_')[1]?.substring(0,4)}
+                  </span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                    r.health_score > 70 ? 'bg-emerald-500/20 text-emerald-400' :
+                    r.health_score > 40 ? 'bg-amber-500/20 text-amber-400' :
+                    'bg-red-500/20 text-red-400'
+                  }`}>Health: {r.health_score}</span>
+                </div>
+                <span className="text-[10px] text-slate-500 mt-1">
+                  {r.created_at ? new Date(r.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'A moment ago'}
+                </span>
+              </button>
+            );
+          })}
+          {!loadingRuns && runs.length === 0 && (
+            <div className="flex flex-col items-center gap-2 py-4 text-center">
+              <Clock size={18} className="text-slate-600" />
+              <p className="text-xs text-slate-500">No analysis runs yet</p>
+              <p className="text-[10px] text-slate-600">Upload a CSV to start</p>
+            </div>
           )}
         </div>
       </div>

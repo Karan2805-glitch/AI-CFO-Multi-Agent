@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE ?? import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 const STORAGE_KEY = 'aicfo_dashboard_state';
 
 const parseJson = async (response) => {
@@ -8,7 +8,6 @@ const parseJson = async (response) => {
   }
   return payload;
 };
-
 export const saveDashboardState = (state) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -59,6 +58,12 @@ export const fetchRuns = async (sessionId) => {
   const response = await fetch(`${API_BASE}/runs/${encodeURIComponent(sessionId)}`);
   return parseJson(response);
 };
+
+export const fetchAllUserRuns = async (username) => {
+  const response = await fetch(`${API_BASE}/session/list/runs?username=${encodeURIComponent(username)}`);
+  return parseJson(response);
+};
+
 
 export const fetchAgentResult = async (runId, agentName) => {
   const response = await fetch(`${API_BASE}/results/${encodeURIComponent(runId)}/${encodeURIComponent(agentName)}`);
