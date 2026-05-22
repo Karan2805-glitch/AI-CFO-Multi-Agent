@@ -427,7 +427,7 @@ def _gemini_summary(payload, fallback_summary):
         import google.generativeai as genai
 
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.0-flash")
         prompt = f"""
         You are an expert AI Chief Financial Officer.
         Convert this structured financial intelligence synthesis into a concise boardroom executive briefing.
