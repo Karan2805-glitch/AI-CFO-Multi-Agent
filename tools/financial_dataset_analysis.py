@@ -30,6 +30,9 @@ TARGET_SEEDS = {
     "In Loss": "High_Risk_full_dataset.csv",
     "Profit Making": "Realistic_JCurve_Growth_dataset.csv",
 }
+FRONTEND_HISTORY_ROWS = 9
+FRONTEND_FORECAST_STEPS = 3
+FRONTEND_FORECAST_SHARE_PCT = round((FRONTEND_FORECAST_STEPS / (FRONTEND_HISTORY_ROWS + FRONTEND_FORECAST_STEPS)) * 100.0, 2)
 EXPORT_COLUMNS = BASE_COLUMNS + ["total_expenses", "net_profit", "archetype"]
 
 
@@ -577,6 +580,26 @@ def _expense_weights(rows: Sequence[Dict[str, object]], archetype: str) -> Dict[
     return {column: value / normalizer for column, value in weights.items()}
 
 
+def _compact_rows_for_frontend(rows: Sequence[Dict[str, object]], target_rows: int = FRONTEND_HISTORY_ROWS) -> List[Dict[str, object]]:
+    if len(rows) <= target_rows:
+        return list(rows)
+
+    if target_rows <= 1:
+        return [rows[-1]]
+
+    last_index = len(rows) - 1
+    selected_indices = []
+    for step in range(target_rows):
+        position = round(step * last_index / (target_rows - 1))
+        if not selected_indices or position != selected_indices[-1]:
+            selected_indices.append(position)
+
+    if selected_indices[-1] != last_index:
+        selected_indices[-1] = last_index
+
+    return [rows[index] for index in selected_indices]
+
+
 def _project_revenue(values: Sequence[float], archetype: str, steps: int) -> List[float]:
     if archetype == "Growing":
         if not values:
@@ -788,7 +811,8 @@ def _build_target_exports(root: Path, export_dir: Path, steps: int) -> List[Dict
             continue
 
         normalized_rows = normalize_rows(read_dataset(source_path), source_name=source_path.name)
-        combined_rows = build_archetype_dataset(normalized_rows, archetype, steps=steps)
+        compact_rows = _compact_rows_for_frontend(normalized_rows, FRONTEND_HISTORY_ROWS)
+        combined_rows = build_archetype_dataset(compact_rows, archetype, steps=steps)
         export_name = f"{source_path.stem}__{archetype.lower().replace(' ', '_')}.csv"
         export_path = export_dir / export_name
         _write_csv(export_path, combined_rows)
@@ -800,7 +824,9 @@ def _build_target_exports(root: Path, export_dir: Path, steps: int) -> List[Dict
                 "export_path": str(export_path),
                 "status": "written",
                 "rows_written": len(combined_rows),
+                "history_rows": len(compact_rows),
                 "future_rows": steps,
+                "forecast_share_pct": FRONTEND_FORECAST_SHARE_PCT,
             }
         )
 
@@ -830,25 +856,40 @@ def _format_markdown(results: List[Dict[str, object]]) -> str:
 
 def _format_exports_markdown(exports: List[Dict[str, object]]) -> str:
     lines = ["# Archetype Exports", ""]
-    lines.append("| Archetype | Source Dataset | Status | Export Path | Rows Written |")
-    lines.append("| --- | --- | --- | --- | ---: |")
+    lines.append("| Archetype | Source Dataset | Status | Export Path | History Rows | Future Rows | Forecast Share % |")
+    lines.append("| --- | --- | --- | --- | ---: | ---: | ---: |")
     for item in exports:
         lines.append(
-            f"| {item.get('archetype', '')} | {item.get('source_dataset', '')} | {item.get('status', '')} | {item.get('export_path', '')} | {item.get('rows_written', 0)} |"
+            f"| {item.get('archetype', '')} | {item.get('source_dataset', '')} | {item.get('status', '')} | {item.get('export_path', '')} | {item.get('history_rows', 0)} | {item.get('future_rows', 0)} | {item.get('forecast_share_pct', 0.0):.2f} |"
         )
     lines.append("")
     lines.append("The exported CSVs keep the required columns and add total_expenses, net_profit, and archetype so each scenario can be used directly in the report pipeline.")
+    lines.append(f"The frontend-oriented exports are compacted to {FRONTEND_HISTORY_ROWS} history rows plus {FRONTEND_FORECAST_STEPS} forecast rows, so the forecast occupies about {FRONTEND_FORECAST_SHARE_PCT:.2f}% of the chart width.")
     return "\n".join(lines)
 
 
 def _pick_base_datasets(results: List[Dict[str, object]]) -> Dict[str, str]:
-    picks: Dict[str, Tuple[str, float]] = {}
-    for item in results:
-        for label, score in item["archetype_scores"].items():
+    label_to_key = {
+        "Growing": "growing",
+        "In Loss": "in_loss",
+        "Profit Making": "profit_making",
+    }
+    picks: Dict[str, Tuple[str, float, float]] = {}
+
+    for label, key in label_to_key.items():
+        candidates = [item for item in results if item.get("best_fit") == label]
+        if not candidates:
+            candidates = results
+
+        for item in candidates:
+            score = float(item["archetype_scores"].get(key, 0.0))
+            confidence_gap = float(item.get("confidence_gap", 0.0))
+            composite = score + confidence_gap
             current = picks.get(label)
-            if current is None or score > current[1]:
-                picks[label] = (item["dataset"], score)
-    return {label: dataset for label, (dataset, _score) in picks.items()}
+            if current is None or composite > current[2]:
+                picks[label] = (item["dataset"], score, composite)
+
+    return {label: dataset for label, (dataset, _score, _composite) in picks.items()}
 
 
 def main() -> int:
@@ -870,6 +911,9 @@ def main() -> int:
         "datasets": results,
         "best_base_datasets": _pick_base_datasets(results),
         "archetype_exports": exports,
+        "frontend_forecast_share_pct": FRONTEND_FORECAST_SHARE_PCT,
+        "frontend_history_rows": FRONTEND_HISTORY_ROWS,
+        "frontend_forecast_rows": FRONTEND_FORECAST_STEPS,
     }
 
     print(json.dumps(summary, indent=2, default=str))
