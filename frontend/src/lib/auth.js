@@ -77,13 +77,20 @@ const decodeGoogleJWT = (credential) => {
 };
 
 export const handleGoogleCredential = async (credentialResponse) => {
-  // For now decode the Google JWT client-side and send to backend in future.
-  const payload = decodeGoogleJWT(credentialResponse.credential);
-  if (!payload) return { success: false, error: 'Invalid Google token' };
-  // Attempt to register/login via backend using email; backend social login not implemented yet.
-  const { name, email, picture } = payload;
-  // Try login; if fails, return user info for client-side flow.
-  return { success: false, error: 'Google sign-in not wired to backend yet', user: { name, email, photo: picture } };
+  if (!credentialResponse?.credential) return { success: false, error: 'Missing Google credential' };
+  try {
+    const res = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: credentialResponse.credential }),
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) return { success: false, error: payload.detail || 'Google sign-in failed' };
+    saveAuth(payload.access_token, payload.user);
+    return { success: true, user: payload.user };
+  } catch (e) {
+    return { success: false, error: e.message || 'Google sign-in failed' };
+  }
 };
 
 // ── Google Client ID ──────────────────────────────────────────────────────────

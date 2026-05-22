@@ -1,20 +1,20 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, DollarSign, BarChart2, Activity, CreditCard, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, IndianRupee, BarChart2, Activity, CreditCard, Sparkles } from 'lucide-react';
 
 const formatValue = (value, currency = true, suffix = '') => {
   if (typeof value !== 'number' || Number.isNaN(value)) return 'N/A';
   if (!currency) return `${value.toFixed(value % 1 !== 0 ? 1 : 0)}${suffix}`;
   const abs = Math.abs(value);
-  if (abs >= 1_000_000_000_000) return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
-  if (abs >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
-  if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (abs >= 1_000) return `$${(value / 1_000).toFixed(1)}k`;
-  return `$${value.toLocaleString()}`;
+  if (abs >= 1_000_000_000_000) return `₹${(value / 1_000_000_000_000).toFixed(2)}T`;
+  if (abs >= 1_000_000_000) return `₹${(value / 1_000_000_000).toFixed(2)}B`;
+  if (abs >= 1_000_000) return `₹${(value / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000) return `₹${(value / 1_000).toFixed(1)}k`;
+  return `₹${value.toLocaleString()}`;
 };
 
 const CARD_THEMES = {
   revenue: {
-    icon: DollarSign,
+    icon: IndianRupee,
     accent: '#3B82F6',
     glow: 'rgba(59,130,246,0.15)',
     bg: 'rgba(59,130,246,0.07)',
@@ -59,7 +59,7 @@ const CARD_THEMES = {
     gradient: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(6,182,212,0.05))',
   },
   default: {
-    icon: DollarSign,
+    icon: IndianRupee,
     accent: '#64748B',
     glow: 'rgba(100,116,139,0.12)',
     bg: 'rgba(100,116,139,0.07)',

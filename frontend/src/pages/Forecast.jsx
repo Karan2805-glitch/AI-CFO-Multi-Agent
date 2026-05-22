@@ -12,7 +12,7 @@ import HealthScoreGauge from '../components/dashboard/HealthScoreGauge';
 import RevenueForecastChart from '../components/dashboard/charts/RevenueForecastChart';
 import { useData } from '../context/DataContext';
 
-const fmt = (v) => `$${(v / 1000000).toFixed(2)}M`;
+const fmt = (v) => `₹${(v / 1000000).toFixed(2)}M`;
 
 // ── Shared Tooltip ────────────────────────────────────────────────────────────
 const CustomTip = ({ active, payload, label, formatter, nameFormatter }) => {
@@ -198,7 +198,7 @@ const ScenarioAnalysis = ({ scenarioData }) => (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={scenarioData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }} layout="vertical">
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" horizontal={false} />
-        <XAxis type="number" tickFormatter={(v) => `$${(v / 1000000).toFixed(1)}M`} tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
+        <XAxis type="number" tickFormatter={(v) => `₹${(v / 1000000).toFixed(1)}M`} tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
         <YAxis type="category" dataKey="scenario" tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} width={120} />
         <Tooltip content={<CustomTip formatter={(v) => fmt(v)} nameFormatter={() => 'Net Profit'} />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
         <Bar dataKey="profit" radius={[0, 4, 4, 0]} barSize={24}>

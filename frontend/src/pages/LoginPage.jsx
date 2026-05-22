@@ -176,9 +176,9 @@ const SignInTab = ({ onLogin }) => {
   };
 
   // Real Google credential (GSI JWT)
-  const handleGoogleCred = (resp) => {
+  const handleGoogleCred = async (resp) => {
     setError(''); setLoading('google');
-    const result = handleGoogleCredential(resp);
+    const result = await handleGoogleCredential(resp);
     if (result.success) { onLogin(result.user); }
     else { setError(result.error); setLoading(null); }
   };
@@ -253,9 +253,9 @@ const RegisterTab = ({ onLogin }) => {
     })();
   };
 
-  const handleGoogleCred = (resp) => {
+  const handleGoogleCred = async (resp) => {
     setError(''); setLoading('google');
-    const result = handleGoogleCredential(resp);
+    const result = await handleGoogleCredential(resp);
     if (result.success) { onLogin(result.user); }
     else { setError(result.error); setLoading(null); }
   };

@@ -79,6 +79,46 @@ def login(payload: LoginPayload, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer", "user": user_dict}
 
 
+class GoogleLoginPayload(BaseModel):
+    credential: str
+
+
+@router.post("/google")
+def google_login(payload: GoogleLoginPayload, db: Session = Depends(get_db)):
+    try:
+        from jose import jwt
+        claims = jwt.get_unverified_claims(payload.credential)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid Google token")
+
+    email = claims.get("email")
+    name = claims.get("name")
+    picture = claims.get("picture")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Invalid Google token claims")
+
+    user = db.query(User).filter(User.email == email.lower()).first()
+    is_new = False
+    if not user:
+        user = User(
+            name=name or email.split("@")[0],
+            email=email.lower(),
+            hashed_password=None,
+            provider="google",
+            photo=picture
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        is_new = True
+
+    token = create_access_token({"sub": user.email, "user_id": user.id})
+    user_dict = user.to_dict()
+    user_dict["isNew"] = is_new
+    return {"access_token": token, "token_type": "bearer", "user": user_dict}
+
+
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 security = HTTPBearer(auto_error=False)
