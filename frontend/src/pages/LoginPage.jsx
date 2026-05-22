@@ -112,7 +112,7 @@ const GoogleAuthButton = ({ onCredential, onDemoSelect, label }) => {
         window.google.accounts.id.renderButton(btnRef.current, {
           theme: 'filled_black',
           size:  'large',
-          width: '100%',
+          width: 320, // Use numeric pixel width instead of '100%' to prevent circular button fallback
           text:  label === 'register' ? 'signup_with' : 'signin_with',
           shape: 'pill',
         });
@@ -128,7 +128,11 @@ const GoogleAuthButton = ({ onCredential, onDemoSelect, label }) => {
 
   // When real GSI button is ready, render it
   if (GOOGLE_CLIENT_ID) {
-    return <div ref={btnRef} className={`w-full transition-opacity duration-300 ${gsiReady ? 'opacity-100' : 'opacity-0 h-12'}`} />;
+    return (
+      <div className="w-full min-h-[44px] flex justify-center items-center py-1">
+        <div ref={btnRef} className="w-full flex justify-center transition-opacity duration-300" style={{ opacity: gsiReady ? 1 : 0 }} />
+      </div>
+    );
   }
 
   // Demo mode: styled button + popup
@@ -178,9 +182,15 @@ const SignInTab = ({ onLogin }) => {
   // Real Google credential (GSI JWT)
   const handleGoogleCred = async (resp) => {
     setError(''); setLoading('google');
+    console.log('Received Google Credential Response:', resp);
     const result = await handleGoogleCredential(resp);
+    console.log('Google Authentication backend result:', result);
     if (result.success) { onLogin(result.user); }
-    else { setError(result.error); setLoading(null); }
+    else {
+      console.error('Google Sign-in failed:', result.error);
+      setError(result.error);
+      setLoading(null);
+    }
   };
 
   // Demo Google account selected
@@ -255,9 +265,15 @@ const RegisterTab = ({ onLogin }) => {
 
   const handleGoogleCred = async (resp) => {
     setError(''); setLoading('google');
+    console.log('Received Google Credential Response (Register):', resp);
     const result = await handleGoogleCredential(resp);
+    console.log('Google Registration backend result:', result);
     if (result.success) { onLogin(result.user); }
-    else { setError(result.error); setLoading(null); }
+    else {
+      console.error('Google Registration failed:', result.error);
+      setError(result.error);
+      setLoading(null);
+    }
   };
 
   const handleDemoGoogle = (acc) => {
