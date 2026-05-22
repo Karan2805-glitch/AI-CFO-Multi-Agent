@@ -47,15 +47,11 @@ const Navigation = ({ user, onLogout, onNewUpload }) => {
     try {
       const res = await fetchResults(runId);
       const dashboardData = res.data ?? res;
-      setDashboardState(dashboardData);
-      
-      const raw = localStorage.getItem('aicfo_dashboard_state');
-      if (raw) {
-        const local = JSON.parse(raw);
-        local.runId = runId;
-        local.dashboardData = dashboardData;
-        localStorage.setItem('aicfo_dashboard_state', JSON.stringify(local));
-      }
+      setDashboardState({
+        sessionId: dashboardData.session_id || sessionId,
+        runId: dashboardData.run_id,
+        dashboardData
+      });
       if (loc.pathname === '/upload') nav('/dashboard');
     } catch (error) { 
       console.error(error);
