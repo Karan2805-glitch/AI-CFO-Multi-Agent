@@ -15,12 +15,45 @@ import AnomalySeverityPanel from '../components/executive/AnomalySeverityPanel';
 import AIChatbot from '../components/AIChatbot';
 import { useData } from '../context/DataContext';
 import { useAnalysis } from '../hooks/useAnalysis';
+import { downloadReport } from '../api/analyzeService';
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
 export default function Dashboard() {
   const { dashboardData, loading, error, runId, sessionId } = useData();
   const analysis = useAnalysis();
+
+  const [isGeneratingReport, setIsGeneratingReport] = React.useState(false);
+  const [generationError, setGenerationError] = React.useState(null);
+
+  const handleGenerateReport = async () => {
+    if (!runId) {
+      setGenerationError("No run ID available for report generation.");
+      return;
+    }
+    setIsGeneratingReport(true);
+    setGenerationError(null);
+    try {
+      const blob = await downloadReport(runId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `executive_report_${runId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Report generation failed:", err);
+      setGenerationError(err.message || "Failed to generate report.");
+      // Auto-clear error after 5 seconds
+      setTimeout(() => {
+        setGenerationError(null);
+      }, 5000);
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -100,16 +133,21 @@ export default function Dashboard() {
             <ConfidenceBadge value={analysis.overallConfidence} />
           )}
           <button
-            onClick={() => window.print()}
-            className="print-hide flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 hover:scale-[1.02]"
+            onClick={handleGenerateReport}
+            disabled={isGeneratingReport}
+            className="print-hide flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
             style={{
               background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15))',
               border: '1px solid rgba(139,92,246,0.25)',
               color: '#C4B5FD',
             }}
           >
-            <FileText size={14} />
-            Generate Report
+            {isGeneratingReport ? (
+              <Loader2 size={14} className="animate-spin text-blue-400" />
+            ) : (
+              <FileText size={14} />
+            )}
+            {isGeneratingReport ? 'Generating...' : 'Generate Report'}
           </button>
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold tracking-wide uppercase shadow-[0_0_15px_rgba(16,185,129,0.15)] print-hide">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -118,6 +156,26 @@ export default function Dashboard() {
           <RiskBadge level={riskLevel} size="lg" />
         </div>
       </section>
+
+      {generationError && (
+        <div className="glass border border-red-500/30 bg-red-500/10 rounded-xl p-4 text-red-200 flex items-center justify-between gap-4 animate-fade-in print-hide -mt-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+              <AlertTriangle size={16} className="text-red-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-red-300">Report Generation Failed</p>
+              <p className="text-xs text-red-400/80 mt-0.5">{generationError}</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setGenerationError(null)}
+            className="text-xs text-slate-400 hover:text-slate-200 transition-colors px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 shrink-0"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════
        * KPI + HEALTH SECTION — Quick Financial Snapshot

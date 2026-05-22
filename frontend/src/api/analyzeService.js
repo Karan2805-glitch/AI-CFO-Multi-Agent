@@ -65,6 +65,15 @@ export const fetchAgentResult = async (runId, agentName) => {
   return parseJson(response);
 };
 
+export const downloadReport = async (runId) => {
+  const response = await fetch(`${API_BASE}/report/generate/${encodeURIComponent(runId)}`);
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.detail || `Failed to generate report (${response.status})`);
+  }
+  return response.blob();
+};
+
 export const runDashboardFlow = async ({ file, sessionPayload, onStep }) => {
   onStep?.(0);
   const sessionRes = await startSession(sessionPayload);
